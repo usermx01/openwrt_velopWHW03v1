@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 
 /*
- * Device Tree Source for Linksys EA8300 (Dallas)
+ * Device Tree Source for Linksys WHW03 (Velop)
  *
- * Copyright (C) 2019 Jeff Kletsky
+ * Copyright (C) 2020 Andreas Calvo
  *
  */
 
