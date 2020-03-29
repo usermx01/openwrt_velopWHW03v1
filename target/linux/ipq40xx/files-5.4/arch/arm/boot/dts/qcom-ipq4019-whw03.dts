@@ -17,11 +17,16 @@
 		led-upgrade = &led_upgrade;
 	};
 
-	soc {
-		rng@22000 {
-			status = "okay";
-		};
+	chosen {
+                bootargs-append = " rootfstype=ext4 root=/dev/mmcblk0p17 rootwait console=ttyMSM0,115200n8";
+        };
 
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x10000000>;
+	};
+
+	soc {
 		mdio@90000 {
 			status = "okay";
 
@@ -29,9 +34,6 @@
 			pinctrl-names = "default";
 		};
 
-		ess-psgmii@98000 {
-			status = "okay";
-		};
 
 		counter@4a1000 {
 			compatible = "qcom,qca-gcnt";
@@ -64,21 +66,6 @@
 			qcom,wifi_noc_memtype_m0_m2 = <TCSR_WIFI_NOC_MEMTYPE_M0_M2>;
 		};
 
-		usb2: usb2@60f8800 {
-			status = "okay";
-		};
-
-		usb3: usb3@8af8800 {
-			status = "okay";
-		};
-
-		crypto@8e3a000 {
-			status = "okay";
-		};
-
-		watchdog@b017000 {
-			status = "okay";
-		};
 
 		ess-switch@c000000 {
 			status = "okay";
@@ -87,6 +74,33 @@
 		edma@c080000 {
 			status = "okay";
 		};
+
+		qcom,pcie@80000 {
+			compatible = "qcom,msm_pcie";
+			cell-index = <0x0>;
+			qcom,ctrl-amt = <0x1>;
+			reg = <0x80000 0x2000 0x99000 0x800 0x40000000 0xf1d 0x40000f20 0xa8 0x40100000 0x1000 0x40200000 0x100000 0x40300000 0xd00000>;
+			reg-names = "parf", "phy", "dm_core", "elbi", "conf", "io", "bars";
+			#address-cells = <0x0>;
+			interrupt-parent = <0x52>;
+			interrupts = <0x0 0x1 0x2 0x3 0x4 0x5 0x6 0x7 0x8 0x9 0xa 0xb 0xc>;
+			#interrupt-cells = <0x1>;
+			interrupt-map-mask = <0xffffffff>;
+			interrupt-map = <0x0 0x1 0x0 0x8d 0x0 0x1 0x1 0x0 0x8e 0x0 0x2 0x1 0x0 0x8f 0x0 0x3 0x1 0x0 0x90 0x0 0x4 0x1 0x0 0x91 0x0 0x5 0x1 0x0 0x92 0x0 0x6 0x1 0x0 0x93 0x0 0x7 0x1 0x0 0x94 0x0 0x8 0x1 0x0 0x95 0x0 0x9 0x1 0x0 0x96 0x0 0xa 0x1 0x0 0x97 0x0 0xb 0x1 0x0 0x98 0x0>;
+			interrupt-names = "int_msi", "int_a", "int_b", "int_c", "int_d", "int_pls_pme", "int_pme_legacy", "int_pls_err", "int_aer_legacy", "int_pls_link_up", "int_pls_link_down", "int_bridge_flush_n", "int_wake";
+			qcom,ep-latency = <0xa>;
+			clocks = <0x2 0x26 0x2 0x27 0x2 0x28>;
+			clock-names = "pcie_0_cfg_ahb_clk", "pcie_0_mstr_axi_clk", "pcie_0_slv_axi_clk";
+			max-clock-frequency-hz = <0x0 0x0 0x0>;
+			resets = <0x2 0x1c 0x2 0x1b 0x2 0x1a 0x2 0x19 0x2 0x18 0x2 0x17 0x2 0x16 0x2 0x15 0x2 0x14 0x2 0x13 0x2 0x12 0x2 0x11>;
+			reset-names = "pcie_rst_axi_m_ares", "pcie_rst_axi_s_ares", "pcie_rst_pipe_ares", "pcie_rst_axi_m_vmidmt_ares", "pcie_rst_axi_s_xpu_ares", "pcie_rst_parf_xpu_ares", "pcie_rst_phy_ares", "pcie_rst_axi_m_sticky_ares", "pcie_rst_pipe_sticky_ares", "pcie_rst_pwr_ares", "pcie_rst_ahb_res", "pcie_rst_phy_ahb_ares";
+			status = "ok";
+			perst-gpio = <0x50 0x26 0x0>;
+			wake-gpio = <0x50 0x28 0x0>;
+			clkreq-gpio = <0x50 0x27 0x0>;
+			linux,phandle = <0x52>;
+			phandle = <0x52>;
+		};		
 	};
 
 	keys {
@@ -103,26 +117,14 @@
 		compatible = "gpio-leds";
 
 		led_status: status {
-			label = "habanero-dvk:green:status";
+			label = "whw03:green:status";
 			gpios = <&tlmm 36 GPIO_ACTIVE_HIGH>;
 			panic-indicator;
 		};
 
 		led_upgrade: upgrade {
-			label = "habanero-dvk:green:upgrade";
+			label = "whw03:green:upgrade";
 			gpios = <&tlmm 40 GPIO_ACTIVE_HIGH>;
-		};
-
-		wlan2g {
-			label = "habanero-dvk:green:wlan2g";
-			gpios = <&tlmm 46 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "phy0tpt";
-		};
-
-		wlan5g {
-			label = "habanero-dvk:green:wlan5g";
-			gpios = <&tlmm 48 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "phy1tpt";
 		};
 	};
 };
@@ -141,10 +143,6 @@
 	vqmmc-supply = <&vqmmc>;
 };
 
-&qpic_bam {
-	status = "okay";
-};
-
 &tlmm {
 	mdio_pins: mdio_pinmux {
 		mux_1 {
@@ -160,18 +158,23 @@
 		};
 	};
 
-	serial0_pins: serial0_pinmux {
-		mux {
-			pins = "gpio16", "gpio17";
-			function = "blsp_uart0";
-			bias-disable;
+	ts_pins: ts_pinmux {
+		mux_1 {
+			pins = "gpio34";
+			output-high;
+		};
+		
+		mux_2 {
+			pins = "gpio35";
+			input-enable;
+			bias-pull-up;
 		};
 	};
 
-	serial1_pins: serial1_pinmux {
-		mux {
-			pins = "gpio8", "gpio9";
-			function = "blsp_uart1";
+	i2c_0_pins: i2c_0_pinmux {
+		pinmux {
+			function = "blsp_i2c0";
+			pins = "gpio58", "gpio59";
 			bias-disable;
 		};
 	};
@@ -210,73 +213,111 @@
 		};
 	};
 
-	spi_0_pins: spi_0_pinmux {
-		pinmux {
-			function = "blsp_spi0";
-			pins = "gpio13", "gpio14", "gpio15";
-			drive-strength = <12>;
-			bias-disable;
-		};
-
-		pinmux_cs {
-			function = "gpio";
-			pins = "gpio12";
-			drive-strength = <2>;
-			bias-disable;
-			output-high;
-		};
-	};
-
-	nand_pins: nand_pins {
-		pullups {
-			pins =  "gpio52", "gpio53", "gpio58", "gpio59";
-			function = "qpic";
-			bias-pull-up;
-		};
-
-		pulldowns {
-			pins = "gpio54", "gpio55", "gpio56", "gpio57",
-				"gpio60", "gpio62", "gpio63", "gpio64",
-				"gpio65", "gpio66", "gpio67", "gpio68",
-				"gpio69";
-			function = "qpic";
-			bias-pull-down;
-		};
-	};
-
 	sd_pins: sd_pins {
 		pinmux {
 			function = "sdio";
 			pins = "gpio23", "gpio24", "gpio25", "gpio26",
-				"gpio28", "gpio29", "gpio30", "gpio31";
-			drive-strength = <10>;
+				"gpio29", "gpio30", "gpio31";
+			drive-strength = <0xa>;
+		};
+
+		pinmux_sd_cmd {
+			function = "sdio_cmd";
+			pins = "gpio28";
+			drive-strength = <0xa>;
 		};
 
 		pinmux_sd_clk {
 			function = "sdio";
 			pins = "gpio27";
-			drive-strength = <16>;
+			drive-strength = <0x10>;
 		};
 
 		pinmux_sd7 {
 			function = "sdio";
 			pins = "gpio32";
-			drive-strength = <10>;
+			drive-strength = <0xa>;
 			bias-disable;
+		};
+	};
+
+	wifi1_pins: wifi1_pinmux {
+		mux_1 {
+		pins = "gpio37";
+		output-high;
+		function = "wcss0_dbg16";
+		bias-pull-up;
+		drive-strength = <0x6>;
+		};
+
+		mux_2 {
+		pins = "gpio43";
+		function = "wifi_wci1";
+		bias-pull-up;
+		drive-strength = <0x6>;
+		};
+
+		mux_3 {
+		pins = "gpio52";
+		output-high;
+		function = "gpio";
+		bias-pull-up;
+		drive-strength = <0x6>;
 		};
 	};
 };
 
-&blsp_dma {
-	status = "okay";
+&blsp1_i2c3 {
+	reg-names = "qup_phys_addr", "bam_phys_addr";
+	reg = <0x78b7000 0x600 0x7884000 0x23000>;
+	status = "ok";
+	pinctrl-0 = <0x4f>;
+	pinctrl-1 = <0x4f>;
+	pinctrl-names = "i2c_active", "i2c_sleep";
+	qca_codec@12 {
+		compatible = "qca,ipq40xx-codec";
+		reg = <0x12>;
+		status = "disabled";
+	};
+	lcd_ts@40 {
+		compatible = "qca,gsl1680_ts";
+		reg = <0x40>;
+		status = "disabled";
+	};
+	pca9633 {
+		compatible = "nxp,pca9633";
+		#address-cells = <0x1>;
+		#size-cells = <0x0>;
+		reg = <0x62>;
+		nxp,hw-blink;
+		red@0 {
+			label = "red";
+			reg = <0x0>;
+			linux,default-trigger = "none";
+		};
+		green@1 {
+			label = "green";
+			reg = <0x1>;
+			linux,default-trigger = "none";
+		};
+		blue@2 {
+			label = "blue";
+			reg = <0x2>;
+			linux,default-trigger = "none";
+		};
+		unused@3 {
+			label = "unused";
+			reg = <0x3>;
+			linux,default-trigger = "none";
+		};
+	};	
 };
 
-&blsp1_spi1 {
+&blsp1_spi2 {
 	status = "okay";
 
 	pinctrl-0 = <&spi_1_pins>;
 	pinctrl-names = "default";
-	cs-gpios = <&tlmm 45 GPIO_ACTIVE_HIGH>;
 
 	flash@0 {
 		compatible = "jedec,spi-nor";
@@ -362,12 +403,8 @@
 	};
 };
 
-/* Some DVK boards ship without NAND */
 &nand {
-	status = "okay";
-
-	pinctrl-0 = <&nand_pins>;
-	pinctrl-names = "default";
+	status = "disabled";
 };
 
 &blsp1_uart1 {
@@ -377,45 +414,30 @@
 	pinctrl-names = "default";
 };
 
-&cryptobam {
-	status = "okay";
-};
-
-&pcie0 {
-	status = "okay";
-
-	perst-gpio = <&tlmm 26 GPIO_ACTIVE_LOW>;
-	wake-gpio = <&tlmm 28 GPIO_ACTIVE_LOW>;
-
-	/* Free slot for use */
-	bridge@0,0 {
-		reg = <0x00000000 0 0 0 0>;
-		#address-cells = <3>;
-		#size-cells = <2>;
-		ranges;
-	};
-};
 
 &wifi0 {
-	status = "okay";
-
-	qcom,ath10k-calibration-variant = "Linksys-WHW03";
+	status = "ok";
+	qca,msi_addr = <0xb006040>;
+	qca,msi_base = <0x40>;
+	wifi-led-gpios = <0x50 0x14 0x1>;
+	wifi-rssi-gpios = <0x50 0x15 0x1>;
+	qcom,mtd-name = "0:ART";
+	qcom,cal-offset = <0x1000>;
+	qcom,cal-len = <0x2f20>;
+	pinctrl-0 = <0x51>;
+	pinctrl-names = "default";
+	btcoex_support = <0x1>;
+	wlan_prio_gpio = <0x34>;
 };
 
 &wifi1 {
-	status = "okay";
-
-	qcom,ath10k-calibration-variant = "Linksys-WHW03";
-};
-
-&usb3_ss_phy {
-	status = "okay";
-};
-
-&usb3_hs_phy {
-	status = "okay";
-};
-
-&usb2_hs_phy {
-	status = "okay";
+	status = "ok";
+	qca,msi_addr = <0xb006040>;
+	qca,msi_base = <0x50>;
+	wifi-led-gpios = <0x50 0x3f 0x1>;
+	wifi-rssi-gpios = <0x50 0x40 0x1>;
+	qcom,mtd-name = "0:ART";
+	qcom,cal-offset = <0x5000>;
+	qcom,cal-len = <0x2f20>;
+	btcoex_support = <0x0>;
 };
