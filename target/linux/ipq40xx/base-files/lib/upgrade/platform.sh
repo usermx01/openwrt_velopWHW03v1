@@ -81,7 +81,8 @@ platform_do_upgrade() {
 		nand_do_upgrade "$1"
 		;;
 	linksys,ea6350v3 |\
-	linksys,ea8300)
+	linksys,ea8300 |\
+	linksys,whw03)
 		platform_do_upgrade_linksys "$1"
 		;;
 	meraki,mr33)

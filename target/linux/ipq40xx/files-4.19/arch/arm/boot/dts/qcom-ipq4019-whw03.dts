@@ -7,8 +7,8 @@
 #include <dt-bindings/soc/qcom,tcsr.h>
 
 / {
-	model = "Linkesys WHW03 (Velop)";
-	compatible = "linksys,whw03";
+	model = "Linksys WHW03 (Velop)";
+	compatible = "linksys,whw03","linksys,whw03b";
 
 	aliases {
 		led-boot = &led_status;
@@ -75,7 +75,7 @@
 			status = "okay";
 		};
 
-		qcom,pcie@80000 {
+		/*qcom,pcie@80000 {
 			compatible = "qcom,msm_pcie";
 			cell-index = <0x0>;
 			qcom,ctrl-amt = <0x1>;
@@ -100,7 +100,7 @@
 			clkreq-gpio = <0x50 0x27 0x0>;
 			linux,phandle = <0x52>;
 			phandle = <0x52>;
-		};		
+		};*/		
 	};
 
 	keys {
@@ -147,7 +147,7 @@
 	mdio_pins: mdio_pinmux {
 		mux_1 {
 			pins = "gpio6";
-			function = "mdio0";
+			function = "mdio";
 			bias-bus-hold;
 		};
 
@@ -268,11 +268,9 @@
 };
 
 &blsp1_i2c3 {
-	reg-names = "qup_phys_addr", "bam_phys_addr";
-	reg = <0x78b7000 0x600 0x7884000 0x23000>;
 	status = "ok";
-	pinctrl-0 = <0x4f>;
-	pinctrl-1 = <0x4f>;
+	pinctrl-0 = <&i2c_0_pins>;
+	pinctrl-1 = <&i2c_0_pins>;
 	pinctrl-names = "i2c_active", "i2c_sleep";
 	qca_codec@12 {
 		compatible = "qca,ipq40xx-codec";
@@ -311,6 +309,10 @@
 			linux,default-trigger = "none";
 		};
 	};	
+};
+
+&blsp1_spi2 {
+	status = "disabled";
 };
 
 &blsp1_spi2 {
@@ -407,7 +409,7 @@
 	status = "disabled";
 };
 
-&blsp1_uart1 {
+&blsp1_uart2 {
 	status = "okay";
 
 	pinctrl-0 = <&serial_1_pins>;
@@ -417,7 +419,8 @@
 
 &wifi0 {
 	status = "ok";
-	qca,msi_addr = <0xb006040>;
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
+/*	qca,msi_addr = <0xb006040>;
 	qca,msi_base = <0x40>;
 	wifi-led-gpios = <0x50 0x14 0x1>;
 	wifi-rssi-gpios = <0x50 0x15 0x1>;
@@ -427,17 +430,18 @@
 	pinctrl-0 = <0x51>;
 	pinctrl-names = "default";
 	btcoex_support = <0x1>;
-	wlan_prio_gpio = <0x34>;
+	wlan_prio_gpio = <0x34>;*/
 };
 
 &wifi1 {
 	status = "ok";
-	qca,msi_addr = <0xb006040>;
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
+/*	qca,msi_addr = <0xb006040>;
 	qca,msi_base = <0x50>;
 	wifi-led-gpios = <0x50 0x3f 0x1>;
 	wifi-rssi-gpios = <0x50 0x40 0x1>;
 	qcom,mtd-name = "0:ART";
 	qcom,cal-offset = <0x5000>;
 	qcom,cal-len = <0x2f20>;
-	btcoex_support = <0x0>;
+	btcoex_support = <0x0>;*/
 };
