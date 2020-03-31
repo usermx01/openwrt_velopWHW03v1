@@ -75,32 +75,6 @@
 			status = "okay";
 		};
 
-		/*qcom,pcie@80000 {
-			compatible = "qcom,msm_pcie";
-			cell-index = <0x0>;
-			qcom,ctrl-amt = <0x1>;
-			reg = <0x80000 0x2000 0x99000 0x800 0x40000000 0xf1d 0x40000f20 0xa8 0x40100000 0x1000 0x40200000 0x100000 0x40300000 0xd00000>;
-			reg-names = "parf", "phy", "dm_core", "elbi", "conf", "io", "bars";
-			#address-cells = <0x0>;
-			interrupt-parent = <0x52>;
-			interrupts = <0x0 0x1 0x2 0x3 0x4 0x5 0x6 0x7 0x8 0x9 0xa 0xb 0xc>;
-			#interrupt-cells = <0x1>;
-			interrupt-map-mask = <0xffffffff>;
-			interrupt-map = <0x0 0x1 0x0 0x8d 0x0 0x1 0x1 0x0 0x8e 0x0 0x2 0x1 0x0 0x8f 0x0 0x3 0x1 0x0 0x90 0x0 0x4 0x1 0x0 0x91 0x0 0x5 0x1 0x0 0x92 0x0 0x6 0x1 0x0 0x93 0x0 0x7 0x1 0x0 0x94 0x0 0x8 0x1 0x0 0x95 0x0 0x9 0x1 0x0 0x96 0x0 0xa 0x1 0x0 0x97 0x0 0xb 0x1 0x0 0x98 0x0>;
-			interrupt-names = "int_msi", "int_a", "int_b", "int_c", "int_d", "int_pls_pme", "int_pme_legacy", "int_pls_err", "int_aer_legacy", "int_pls_link_up", "int_pls_link_down", "int_bridge_flush_n", "int_wake";
-			qcom,ep-latency = <0xa>;
-			clocks = <0x2 0x26 0x2 0x27 0x2 0x28>;
-			clock-names = "pcie_0_cfg_ahb_clk", "pcie_0_mstr_axi_clk", "pcie_0_slv_axi_clk";
-			max-clock-frequency-hz = <0x0 0x0 0x0>;
-			resets = <0x2 0x1c 0x2 0x1b 0x2 0x1a 0x2 0x19 0x2 0x18 0x2 0x17 0x2 0x16 0x2 0x15 0x2 0x14 0x2 0x13 0x2 0x12 0x2 0x11>;
-			reset-names = "pcie_rst_axi_m_ares", "pcie_rst_axi_s_ares", "pcie_rst_pipe_ares", "pcie_rst_axi_m_vmidmt_ares", "pcie_rst_axi_s_xpu_ares", "pcie_rst_parf_xpu_ares", "pcie_rst_phy_ares", "pcie_rst_axi_m_sticky_ares", "pcie_rst_pipe_sticky_ares", "pcie_rst_pwr_ares", "pcie_rst_ahb_res", "pcie_rst_phy_ahb_ares";
-			status = "ok";
-			perst-gpio = <0x50 0x26 0x0>;
-			wake-gpio = <0x50 0x28 0x0>;
-			clkreq-gpio = <0x50 0x27 0x0>;
-			linux,phandle = <0x52>;
-			phandle = <0x52>;
-		};*/		
 	};
 
 	keys {
@@ -179,7 +153,7 @@
 		};
 	};
 
-	spi_1_pins: spi_1_pinmux {
+	spi_0_pins: spi_0_pinmux {
 		pinmux {
 			function = "blsp_spi1";
 			pins = "gpio45", "gpio47", "gpio46";
@@ -272,16 +246,6 @@
 	pinctrl-0 = <&i2c_0_pins>;
 	pinctrl-1 = <&i2c_0_pins>;
 	pinctrl-names = "i2c_active", "i2c_sleep";
-	qca_codec@12 {
-		compatible = "qca,ipq40xx-codec";
-		reg = <0x12>;
-		status = "disabled";
-	};
-	lcd_ts@40 {
-		compatible = "qca,gsl1680_ts";
-		reg = <0x40>;
-		status = "disabled";
-	};
 	pca9633 {
 		compatible = "nxp,pca9633";
 		#address-cells = <0x1>;
@@ -311,14 +275,10 @@
 	};	
 };
 
-&blsp1_spi2 {
-	status = "disabled";
-};
-
-&blsp1_spi2 {
+&blsp1_spi1 {
 	status = "okay";
 
-	pinctrl-0 = <&spi_1_pins>;
+	pinctrl-0 = <&spi_0_pins>;
 	pinctrl-names = "default";
 
 	flash@0 {
@@ -332,52 +292,52 @@
 			#size-cells = <1>;
 
 			partition@22 {
-				label = "SBL1";
+				label = "0:SBL1";
 				reg = <0x00000022 0x00000421>;
 				read-only;
 			};
 			partition@422 {
-				label = "BOOTCONFIG";
+				label = "0:BOOTCONFIG";
 				reg = <0x00000422 0x00000821>;
 				read-only;
 			};
 			partition@822 {
-				label = "QSEE";
+				label = "0:QSEE";
 				reg = <0x00000822 0x00000C21>;
 				read-only;
 			};
 			partition@c22 {
-				label = "QSEE_1";
+				label = "0:QSEE_1";
 				reg = <0x00000C22 0x00001021>;
 				read-only;
 			};
 			partition@1022 {
-				label = "CDT";
+				label = "0:CDT";
 				reg = <0x00001022 0x00001221>;
 				read-only;
 			};
 			partition@1222 {
-				label = "CDT_1";
+				label = "0:CDT_1";
 				reg = <0x00001222 0x00001421>;
 				read-only;
 			};
 			partition@1422 {
-				label = "BOOTCONFIG1";
+				label = "0:BOOTCONFIG1";
 				reg = <0x00001422 0x00001621>;
 				read-only;
 			};
 			partition@1622 {
-				label = "APPSBL"; /* uboot env */
+				label = "0:APPSBL"; /* uboot env */
 				reg = <0x00001622 0x00001E21>;
 				read-only;
 			};
 			partition@1E22 {
-				label = "APPSBL_1"; /* uboot env */
+				label = "0:APPSBL_1"; /* uboot env */
 				reg = <0x00001E22 0x00002621>;
 				read-only;
 			};
 			partition@2622 {
-				label = "ART";
+				label = "0:ART";
 				reg = <0x00002622 0x00002681>;
 				read-only;
 			};
@@ -401,8 +361,34 @@
 				compatible = "denx,fit";
 				reg = <0x00004022 0x00048021>;
 			};
+			partition@8022 {
+				label = "rootfs";
+				compatible = "denx,fit";
+				reg = <0x00004022 0x00048021>;
+			};
 		};
 	};
+};
+
+&pcie0 {
+        status = "okay";
+
+        perst-gpio = <&tlmm 26 GPIO_ACTIVE_LOW>;
+        wake-gpio = <&tlmm 28 GPIO_ACTIVE_LOW>;
+
+        /* Free slot for use */
+        bridge@0,0 {
+                reg = <0x00000000 0 0 0 0>;
+                #address-cells = <3>;
+                #size-cells = <2>;
+                ranges;
+		wifi2: wifi@1,0 {
+                        compatible = "qcom,ath10k";
+                        reg = <0x00010000 0 0 0 0>;
+                        ieee80211-freq-limit = <5470000 5875000>;
+                        qcom,ath10k-calibration-variant = "linksys-whw03";
+                };
+        };
 };
 
 &nand {
@@ -419,29 +405,10 @@
 
 &wifi0 {
 	status = "ok";
-	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
-/*	qca,msi_addr = <0xb006040>;
-	qca,msi_base = <0x40>;
-	wifi-led-gpios = <0x50 0x14 0x1>;
-	wifi-rssi-gpios = <0x50 0x15 0x1>;
-	qcom,mtd-name = "0:ART";
-	qcom,cal-offset = <0x1000>;
-	qcom,cal-len = <0x2f20>;
-	pinctrl-0 = <0x51>;
-	pinctrl-names = "default";
-	btcoex_support = <0x1>;
-	wlan_prio_gpio = <0x34>;*/
+	qcom,ath10k-calibration-variant = "linksys-whw03";
 };
 
 &wifi1 {
 	status = "ok";
-	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
-/*	qca,msi_addr = <0xb006040>;
-	qca,msi_base = <0x50>;
-	wifi-led-gpios = <0x50 0x3f 0x1>;
-	wifi-rssi-gpios = <0x50 0x40 0x1>;
-	qcom,mtd-name = "0:ART";
-	qcom,cal-offset = <0x5000>;
-	qcom,cal-len = <0x2f20>;
-	btcoex_support = <0x0>;*/
+	qcom,ath10k-calibration-variant = "linksys-whw03";
 };
