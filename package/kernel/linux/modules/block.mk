@@ -200,7 +200,6 @@ define KernelPackage/block2mtd
   TITLE:=Block device MTD emulation
   KCONFIG:=CONFIG_MTD_BLOCK2MTD
   FILES:=$(LINUX_DIR)/drivers/mtd/devices/block2mtd.ko
-  AUTOLOAD:=$(call AutoLoad,10,block2mtd,1)
 endef
 
 $(eval $(call KernelPackage,block2mtd))

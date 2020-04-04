@@ -35,6 +35,10 @@ case "$FIRMWARE" in
 	openmesh,a62)
 		caldata_extract "0:ART" 0x9000 0x2f20
 		;;
+	linksys,whw03)
+		caldata_from_file "/dev/mmcblk0p10" 0x9000 0x2f20
+		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 4)
+		;;
 	linksys,ea8300)
 		caldata_extract "ART" 0x9000 0x2f20
 		# OEM assigns 4 sequential MACs
@@ -87,8 +91,7 @@ case "$FIRMWARE" in
 	openmesh,a62 |\
 	qxwlan,e2600ac-c1 |\
 	qxwlan,e2600ac-c2 |\
-	unielec,u4019-32m |\
-	linksys,whw03)
+	unielec,u4019-32m)
 		caldata_extract "0:ART" 0x1000 0x2f20
 		;;
 	dlink,dap-2610)
@@ -102,6 +105,10 @@ case "$FIRMWARE" in
 	engenius,ens620ext)
 		caldata_extract "ART" 0x1000 0x2f20
 		ath10k_patch_mac $(macaddr_add $(mtd_get_mac_ascii u-boot-env ethaddr) +2)
+		;;
+	linksys,whw03)
+		caldata_from_file "/dev/mmcblk0p10" 0x1000 0x2f20
+		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 2)
 		;;
 	linksys,ea8300)
 		caldata_extract "ART" 0x1000 0x2f20
@@ -169,8 +176,7 @@ case "$FIRMWARE" in
 	openmesh,a62 |\
 	qxwlan,e2600ac-c1 |\
 	qxwlan,e2600ac-c2 |\
-	unielec,u4019-32m |\
-	linksys,whw03)
+	unielec,u4019-32m)
 		caldata_extract "0:ART" 0x5000 0x2f20
 		;;
 	dlink,dap-2610)
@@ -184,6 +190,10 @@ case "$FIRMWARE" in
 	engenius,ens620ext)
 		caldata_extract "ART" 0x5000 0x2f20
 		ath10k_patch_mac $(macaddr_add $(mtd_get_mac_ascii u-boot-env ethaddr) +3)
+		;;
+	linksys,whw03)
+		caldata_from_file "/dev/mmcblk0p10" 0x5000 0x2f20
+		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 3)
 		;;
 	linksys,ea8300)
 		caldata_extract "ART" 0x5000 0x2f20

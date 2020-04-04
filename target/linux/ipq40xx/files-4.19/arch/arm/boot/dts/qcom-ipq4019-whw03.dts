@@ -25,7 +25,7 @@
 	compatible = "linksys,whw03", "qcom,ipq4019";
 
 	chosen {
-		bootargs = "block2mtd.block2mtd=/dev/mmcblk0,65536,eMMC,5 mtdparts=eMMC:256k(0:SBL1)ro,256k(0:BOOTCONFIG)ro,256k(0:QSEE)ro,256k(0:QSEE_1)ro,128k(0:CDT)ro,128k(0:CDT_1)ro,128k(0:BOOTCONFIG1)ro,512k(0:APPSBL)ro,512k(0:APPSBL_1)ro,128k(0:ART)ro,512k(u_env),512k(s_env),512k(devinfo)";
+	//	bootargs = "block2mtd.block2mtd=/dev/mmcblk0,65536,eMMC,5 mtdparts=eMMC:256k(0:SBL1)ro,256k(0:BOOTCONFIG)ro,256k(0:QSEE)ro,256k(0:QSEE_1)ro,128k(0:CDT)ro,128k(0:CDT_1)ro,128k(0:BOOTCONFIG1)ro,512k(0:APPSBL)ro,512k(0:APPSBL_1)ro,128k(0:ART)ro,512k(u_env),512k(s_env),512k(devinfo)";
 		bootargs-append = " clk_ignore_unused";
 	};
 
