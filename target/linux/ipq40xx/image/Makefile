@@ -437,7 +437,7 @@ define Device/linksys_whw03
 	UBINIZE_OPTS := -E 5    # EOD marks to "hide" factory sig at EOF
 	IMAGES := sysupgrade.bin factory.bin
 	IMAGE/factory.bin  := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-ubi | linksys-image type=WHW03
-	DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct kmod-leds-pca963x kmod-fs-ext4 kmod-mmc kmod-mmc-spi ath10k-firmware-qca4019 kmod-usb-phy-qcom-dwc3
+	DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct ipq-wifi-linksys_whw03 kmod-leds-pca963x kmod-fs-ext4
 endef
 TARGET_DEVICES += linksys_whw03
 

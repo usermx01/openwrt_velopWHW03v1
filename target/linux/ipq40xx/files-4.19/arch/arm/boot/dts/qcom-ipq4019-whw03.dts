@@ -25,24 +25,19 @@
 	compatible = "linksys,whw03", "qcom,ipq4019";
 
 	chosen {
-		bootargs = "root=/dev/mmcblk0p14 rw rootfstype=ext4 rootwait";
+		bootargs = "block2mtd.block2mtd=/dev/mmcblk0,65536,eMMC,5 mtdparts=eMMC:256k(0:SBL1)ro,256k(0:BOOTCONFIG)ro,256k(0:QSEE)ro,256k(0:QSEE_1)ro,128k(0:CDT)ro,128k(0:CDT_1)ro,128k(0:BOOTCONFIG1)ro,512k(0:APPSBL)ro,512k(0:APPSBL_1)ro,128k(0:ART)ro,512k(u_env),512k(s_env),512k(devinfo)";
+		bootargs-append = " clk_ignore_unused";
 	};
 
 
 	soc {
-		mdio@90000 {
+		rng@22000 {
 			status = "okay";
-			pinctrl-0 = <&mdio_pins>;
-			pinctrl-names = "default";
 		};
+
 
 		ess-psgmii@98000 {
 			status = "okay";
-		};
-
-		counter@4a1000 {
-			compatible = "qcom,qca-gcnt";
-			reg = <0x4a1000 0x4>;
 		};
 
 		tcsr@1949000 {
@@ -76,7 +71,7 @@
 		};
 
 		serial@78af000 {
-			pinctrl-0 = <&serial_pins>;
+			pinctrl-0 = <&serial_0_pins>;
 			pinctrl-names = "default";
 			status = "okay";
 		};
@@ -95,14 +90,9 @@
 
 		ess-switch@c000000 {
 			status = "okay";
-			switch_lan_bmp = <0x10>; /* lan port bitmap */
 		};
 
 		edma@c080000 {
-			status = "okay";
-		};
-
-		vccq_sd0: regulator@1948000 {
 			status = "okay";
 		};
 
@@ -117,6 +107,12 @@
 			linux,code = <KEY_RESTART >;
 		};
 	};
+};
+
+&mdio {
+	status = "okay";
+	pinctrl-0 = <&mdio_pins>;
+	pinctrl-names = "default";
 };
 
 &tlmm {
@@ -143,16 +139,19 @@
 		};
 	};
 
-	serial_pins: serial_pinmux {
+	serial_0_pins: serial0_pinmux {
 		mux {
 			pins = "gpio16", "gpio17";
 			function = "blsp_uart0";
 			bias-disable;
 		};
+	};
 
-		pulldowns {
-			pins = "gpio16";
-			bias-pull-down;
+	serial_1_pins: serial1_pinmux {
+		mux {
+			pins = "gpio8", "gpio9";
+			function = "blsp_uart1";
+			bias-disable;
 		};
 	};
 
@@ -160,11 +159,6 @@
 		pinmux {
 			function = "blsp_i2c0";
 			pins = "gpio58", "gpio59";
-			bias-disable;
-		};
-		pinconf {
-			pins = "gpio58", "gpio59";
-			drive-strength = <16>;
 			bias-disable;
 		};
 	};
@@ -268,6 +262,25 @@
 	};
 };
 
+&pcie0 {
+	status = "okay";
+	perst-gpio = <&tlmm 38 GPIO_ACTIVE_LOW>;
+	wake-gpio = <&tlmm 40 GPIO_ACTIVE_LOW>;
+	clkreq-gpio = <&tlmm 39 GPIO_ACTIVE_LOW>;
+
+	bridge@0,0 {
+		reg = <0x00000000 0 0 0 0>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		ranges;
+
+		wifi2: wifi@1,0 {
+			compatible = "qcom,ath10k";
+			reg = <0x00010000 0 0 0 0>;
+		};
+	};
+};
+
 &vqmmc {
 	status = "ok";
 };
@@ -344,12 +357,19 @@
 	status = "okay";
 	pinctrl-0 = <&wifi0_pins>;
 	pinctrol-names = "default";
-	qcom,ath10k-calibration-variant = "Linksys-WHW03";
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
 
 &wifi1 {
 	status = "okay";
-	qcom,ath10k-calibration-variant = "Linksys-WHW03";
+	ieee80211-freq-limit = <5170000 5330000>;
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
+};
+
+&wifi2 {
+	status = "okay";
+	ieee80211-freq-limit = <5490000 5835000>;
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
 
 &usb3_ss_phy {
@@ -364,23 +384,3 @@
 	status = "okay";
 };
 
-&pcie0 {
-	status = "okay";
-	perst-gpio = <&tlmm 38 GPIO_ACTIVE_LOW>;
-	wake-gpio = <&tlmm 40 GPIO_ACTIVE_LOW>;
-
-	pcie@0 {
-		reg = <0 0 0 0 0>;
-		#interrupt-cells = <1>;
-		#size-cells = <2>;
-		#address-cells = <3>;
-		device_type = "pci";
-
-		ath10k@0,0 {
-			compatible = "qcom,ath10k";
-			status = "okay";
-			reg = <0 0 0 0 0>;
-			device_type = "pci";
-		};
-	};
-};
