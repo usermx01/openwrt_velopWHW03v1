@@ -25,6 +25,7 @@ ipq40xx_setup_interfaces()
 		;;
 	asus,map-ac2200|\
 	cilab,meshpoint-one|\
+	linksys,whw03|\
 	openmesh,a42|\
 	openmesh,a62)
 		ucidef_set_interfaces_lan_wan "eth1" "eth0"
@@ -37,7 +38,6 @@ ipq40xx_setup_interfaces()
 		;;
 	avm,fritzbox-4040|\
 	linksys,ea6350v3|\
-	linksys,whw03|\
 	linksys,ea8300)
 		ucidef_set_interfaces_lan_wan "eth0" "eth1"
 		ucidef_add_switch "switch0" \

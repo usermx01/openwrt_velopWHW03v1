@@ -25,10 +25,79 @@
 	compatible = "linksys,whw03", "qcom,ipq4019";
 
 	chosen {
-	//	bootargs = "block2mtd.block2mtd=/dev/mmcblk0,65536,eMMC,5 mtdparts=eMMC:256k(0:SBL1)ro,256k(0:BOOTCONFIG)ro,256k(0:QSEE)ro,256k(0:QSEE_1)ro,128k(0:CDT)ro,128k(0:CDT_1)ro,128k(0:BOOTCONFIG1)ro,512k(0:APPSBL)ro,512k(0:APPSBL_1)ro,128k(0:ART)ro,512k(u_env),512k(s_env),512k(devinfo)";
+		//bootargs = " rootfstype=ext4 root=/dev/mmcblk0p15  rootwait console=ttyMSM0,115200n8";
 		bootargs-append = " clk_ignore_unused";
 	};
 
+	aliases {
+                led-boot = &led_blue;
+                led-failsafe = &led_red;
+                led-running = &led_green;
+                led-upgrade = &led_unused;
+                serial0 = &blsp1_uart1;
+        };
+	
+	leds {
+                compatible = "gpio-leds";
+
+                // Retain node names from running OEM on EA8300
+
+                // Front panel LEDs, top to bottom
+
+                led_red: red {
+			label = "velop:power:red";
+                        gpios = <&tlmm 36 0x0>;
+                        panic-indicator;
+                };
+
+                led_green: green {
+			label = "velop:power:green";
+                        gpios = <&tlmm 36 0x1>;
+                };
+
+                led_blue: blue {
+			label = "velop:power:blue";
+                        gpios = <&tlmm 36 0x2>;
+                };
+
+                led_unused: unused {
+			label = "velop:power:unused";
+                        gpios = <&tlmm 36 0x3>;
+                };
+        };
+
+	keys {
+		compatible = "gpio-keys";
+
+		button@0 {
+			label = "reset";
+			linux,code = <KEY_RESTART>;
+			gpios = <&tlmm 18 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x10000000>;
+	};
+
+	/*reserved-memory {
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		ranges;
+		rsvd1@87000000 {
+			reg = <0x87000000 0x500000>;
+			no-map;
+		};
+		wifi_dump@87500000 {
+			reg = <0x87500000 0x600000>;
+			no-map;
+		};
+		rsvd2@87B00000 {
+			reg = <0x87b00000 0x500000>;
+			no-map;
+		};
+	};*/
 
 	soc {
 		rng@22000 {
@@ -66,17 +135,9 @@
 			qcom,wifi_noc_memtype_m0_m2 = <TCSR_WIFI_NOC_MEMTYPE_M0_M2>;
 		};
 
-		usb2: usb2@60f8800 {
-			status = "okay";
-		};
-
 		serial@78af000 {
 			pinctrl-0 = <&serial_0_pins>;
 			pinctrl-names = "default";
-			status = "okay";
-		};
-
-		usb3: usb3@8af8800 {
 			status = "okay";
 		};
 
@@ -103,8 +164,8 @@
 
 		reset {
 			label = "reset";
-			gpios = <&tlmm 18 GPIO_ACTIVE_LOW>;
-			linux,code = <KEY_RESTART >;
+			gpios = <&tlmm 18 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_RESTART>;
 		};
 	};
 };
@@ -162,6 +223,14 @@
 			bias-disable;
 		};
 	};
+
+	/*led_pins: led_0_pinmux {
+		mux_3 {
+			pins = "gpio36";
+			function = "led2";
+			bias-pull-down;
+		};
+	};*/
 
 	spi_0_pins: spi_0_pinmux {
 		mux {
@@ -266,7 +335,7 @@
 	status = "okay";
 	perst-gpio = <&tlmm 38 GPIO_ACTIVE_LOW>;
 	wake-gpio = <&tlmm 40 GPIO_ACTIVE_LOW>;
-	clkreq-gpio = <&tlmm 39 GPIO_ACTIVE_LOW>;
+	//clkreq-gpio = <&tlmm 39 GPIO_ACTIVE_LOW>;
 
 	bridge@0,0 {
 		reg = <0x00000000 0 0 0 0>;
@@ -298,6 +367,17 @@
 	status = "okay";
 };
 
+&blsp1_uart1 {
+	status = "okay";
+	pinctrl-0 = <&serial_0_pins>;
+	pinctrl-names = "default";
+
+};
+
+&qpic_bam {
+	status = "okay";
+};
+
 &blsp1_spi2 {
 	pinctrl-0 = <&spi_1_pins>;
 	pinctrl-names = "default";
@@ -326,28 +406,9 @@
 		#size-cells = <0x0>;
 		reg = <0x62>;
 		nxp,hw-blink;
-		red@0 {
-			label = "red";
-			reg = <0x0>;
-			linux,default-trigger = "none";
-		};
-		green@1 {
-			label = "green";
-			reg = <0x1>;
-			linux,default-trigger = "none";
-		};
-		blue@2 {
-			label = "blue";
-			reg = <0x2>;
-			linux,default-trigger = "none";
-		};
-		unused@3 {
-			label = "unused";
-			reg = <0x3>;
-			linux,default-trigger = "none";
-		};
 	};
 };
+
 
 &cryptobam {
 	status = "okay";
@@ -362,25 +423,12 @@
 
 &wifi1 {
 	status = "okay";
-	ieee80211-freq-limit = <5170000 5330000>;
+	//ieee80211-freq-limit = <5170000 5330000>;
 	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
 
 &wifi2 {
 	status = "okay";
-	ieee80211-freq-limit = <5490000 5835000>;
+	//ieee80211-freq-limit = <5490000 5835000>;
 	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
-
-&usb3_ss_phy {
-	status = "okay";
-};
-
-&usb3_hs_phy {
-	status = "okay";
-};
-
-&usb2_hs_phy {
-	status = "okay";
-};
-
