@@ -22,40 +22,37 @@
 	};
 
 	aliases {
-                led-boot = &led_blue;
+                /*led-boot = &led_blue;
                 led-failsafe = &led_red;
                 led-running = &led_green;
-                led-upgrade = &led_unused;
+                led-upgrade = &led_unused;*/
                 serial0 = &blsp1_uart1;
         };
+
+	&expander0 {
+		power_red@0 {
+			label = "velop:red:power";
+			reg = <0x0>;
+		};
+		power_green@1 {
+			label = "velop:green:power";
+			reg = <0x1>;
+		};
+		power_blue@2 {
+			label = "velop:blue:power";
+			reg = <0x2>;
+		};
+		power_unused@3 {
+			label = "velop:unused:power";
+			reg = <0x3>;
+		};
+	};
 	
 	leds {
                 compatible = "gpio-leds";
+		pinctrl-0 = <&led_pins>;
+		pinctrl-names = "default";
 
-                // Retain node names from running OEM on EA8300
-
-                // Front panel LEDs, top to bottom
-
-                led_red: red {
-			label = "velop:power:red";
-                        gpios = <&tlmm 36 0x0>;
-                        panic-indicator;
-                };
-
-                led_green: green {
-			label = "velop:power:green";
-                        gpios = <&tlmm 36 0x1>;
-                };
-
-                led_blue: blue {
-			label = "velop:power:blue";
-                        gpios = <&tlmm 36 0x2>;
-                };
-
-                led_unused: unused {
-			label = "velop:power:unused";
-                        gpios = <&tlmm 36 0x3>;
-                };
         };
 
 	keys {
@@ -127,12 +124,6 @@
 			qcom,wifi_noc_memtype_m0_m2 = <TCSR_WIFI_NOC_MEMTYPE_M0_M2>;
 		};
 
-		serial@78af000 {
-			pinctrl-0 = <&serial_0_pins>;
-			pinctrl-names = "default";
-			status = "okay";
-		};
-
 		crypto@8e3a000 {
 			status = "okay";
 		};
@@ -149,16 +140,6 @@
 			status = "okay";
 		};
 
-	};
-
-	gpio-keys {
-		compatible = "gpio-keys";
-
-		reset {
-			label = "reset";
-			gpios = <&tlmm 18 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_RESTART>;
-		};
 	};
 };
 
@@ -216,13 +197,13 @@
 		};
 	};
 
-	/*led_pins: led_0_pinmux {
+	led_pins: led_0_pinmux {
 		mux_3 {
 			pins = "gpio36";
 			function = "led2";
 			bias-pull-down;
 		};
-	};*/
+	};
 
 	spi_0_pins: spi_0_pinmux {
 		mux {
@@ -327,7 +308,7 @@
 	status = "okay";
 	perst-gpio = <&tlmm 38 GPIO_ACTIVE_LOW>;
 	wake-gpio = <&tlmm 40 GPIO_ACTIVE_LOW>;
-	//clkreq-gpio = <&tlmm 39 GPIO_ACTIVE_LOW>;
+	clkreq-gpio = <&tlmm 39 GPIO_ACTIVE_LOW>;
 
 	bridge@0,0 {
 		reg = <0x00000000 0 0 0 0>;
@@ -350,8 +331,8 @@
 	vqmmc = <&vqmmc>;
 	pinctrl-0 = <&sd_0_pins>;
 	pinctrl-names = "default";
-	cd-gpios = <0x50 0x16 0x1>;
-	sd-ldo-gpios = <0x50 0x21 0x1>;
+	cd-gpios = <&tlmm 0x16 GPIO_ACTIVE_HIGH>;
+	sd-ldo-gpios = <&tlmm 0x21 GPIO_ACTIVE_HIGH>;
 	status = "ok";
 };
 
@@ -392,7 +373,7 @@
 
 	status = "okay";
 
-	pca9633 {
+	expander0: pca9633@62 {
 		compatible = "nxp,pca9633";
 		#address-cells = <0x1>;
 		#size-cells = <0x0>;
