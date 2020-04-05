@@ -29,24 +29,6 @@
                 serial0 = &blsp1_uart1;
         };
 
-	&expander0 {
-		power_red@0 {
-			label = "velop:red:power";
-			reg = <0x0>;
-		};
-		power_green@1 {
-			label = "velop:green:power";
-			reg = <0x1>;
-		};
-		power_blue@2 {
-			label = "velop:blue:power";
-			reg = <0x2>;
-		};
-		power_unused@3 {
-			label = "velop:unused:power";
-			reg = <0x3>;
-		};
-	};
 	
 	leds {
                 compatible = "gpio-leds";
@@ -382,6 +364,24 @@
 	};
 };
 
+&expander0 {
+	power_red@0 {
+		label = "velop:red:power";
+		reg = <0x0>;
+	};
+	power_green@1 {
+		label = "velop:green:power";
+		reg = <0x1>;
+	};
+	power_blue@2 {
+		label = "velop:blue:power";
+		reg = <0x2>;
+	};
+	power_unused@3 {
+		label = "velop:unused:power";
+		reg = <0x3>;
+	};
+};
 
 &cryptobam {
 	status = "okay";
