@@ -1,43 +1,104 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR MIT
-/* Copyright (c) 2019, Robert Marko <robimarko@gmail.com> */
 
-#include "qcom-ipq4019-ap.dk04.1.dtsi"
+/*
+ * Device Tree Source for Linksys WHW03 (Velop)
+ *
+ * Copyright (C) 2020 Andreas Calvo <flipy.bcn@gmail.com>
+ *
+ */
+
+#include "qcom-ipq4019.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/soc/qcom,tcsr.h>
 
 / {
 	model = "Linksys WHW03 (Velop)";
-	compatible = "linksys,whw03","linksys,whw03b";
-
-	aliases {
-		led-boot = &led_status;
-		led-failsafe = &led_status;
-		led-running = &led_status;
-		led-upgrade = &led_upgrade;
-	};
+	compatible = "linksys,whw03", "qcom,ipq4019";
 
 	chosen {
-                bootargs-append = " rootfstype=ext4 root=/dev/mmcblk0p17 rootwait console=ttyMSM0,115200n8";
+		//bootargs = " rootfstype=ext4 root=/dev/mmcblk0p15  rootwait console=ttyMSM0,115200n8";
+		bootargs-append = " clk_ignore_unused";
+	};
+
+	aliases {
+                led-boot = &led_blue;
+                led-failsafe = &led_red;
+                led-running = &led_green;
+                led-upgrade = &led_unused;
+                serial0 = &blsp1_uart1;
         };
+	
+	leds {
+                compatible = "gpio-leds";
+
+                // Retain node names from running OEM on EA8300
+
+                // Front panel LEDs, top to bottom
+
+                led_red: red {
+			label = "velop:power:red";
+                        gpios = <&tlmm 36 0x0>;
+                        panic-indicator;
+                };
+
+                led_green: green {
+			label = "velop:power:green";
+                        gpios = <&tlmm 36 0x1>;
+                };
+
+                led_blue: blue {
+			label = "velop:power:blue";
+                        gpios = <&tlmm 36 0x2>;
+                };
+
+                led_unused: unused {
+			label = "velop:power:unused";
+                        gpios = <&tlmm 36 0x3>;
+                };
+        };
+
+	keys {
+		compatible = "gpio-keys";
+
+		button@0 {
+			label = "reset";
+			linux,code = <KEY_RESTART>;
+			gpios = <&tlmm 18 GPIO_ACTIVE_HIGH>;
+		};
+	};
 
 	memory {
 		device_type = "memory";
 		reg = <0x80000000 0x10000000>;
 	};
 
-	soc {
-		mdio@90000 {
-			status = "okay";
+	/*reserved-memory {
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		ranges;
+		rsvd1@87000000 {
+			reg = <0x87000000 0x500000>;
+			no-map;
+		};
+		wifi_dump@87500000 {
+			reg = <0x87500000 0x600000>;
+			no-map;
+		};
+		rsvd2@87B00000 {
+			reg = <0x87b00000 0x500000>;
+			no-map;
+		};
+	};*/
 
-			pinctrl-0 = <&mdio_pins>;
-			pinctrl-names = "default";
+	soc {
+		rng@22000 {
+			status = "okay";
 		};
 
 
-		counter@4a1000 {
-			compatible = "qcom,qca-gcnt";
-			reg = <0x4a1000 0x4>;
+		ess-psgmii@98000 {
+			status = "okay";
 		};
 
 		tcsr@1949000 {
@@ -47,11 +108,11 @@
 		};
 
 		tcsr@194b000 {
-			status = "okay";
-
+			/* select hostmode */
 			compatible = "qcom,tcsr";
 			reg = <0x194b000 0x100>;
 			qcom,usb-hsphy-mode-select = <TCSR_USB_HSPHY_HOST_MODE>;
+			status = "okay";
 		};
 
 		ess_tcsr@1953000 {
@@ -66,6 +127,19 @@
 			qcom,wifi_noc_memtype_m0_m2 = <TCSR_WIFI_NOC_MEMTYPE_M0_M2>;
 		};
 
+		serial@78af000 {
+			pinctrl-0 = <&serial_0_pins>;
+			pinctrl-names = "default";
+			status = "okay";
+		};
+
+		crypto@8e3a000 {
+			status = "okay";
+		};
+
+		watchdog@b017000 {
+			status = "okay";
+		};
 
 		ess-switch@c000000 {
 			status = "okay";
@@ -77,71 +151,60 @@
 
 	};
 
-	keys {
+	gpio-keys {
 		compatible = "gpio-keys";
 
 		reset {
 			label = "reset";
-			gpios = <&tlmm 49 GPIO_ACTIVE_HIGH>;
+			gpios = <&tlmm 18 GPIO_ACTIVE_HIGH>;
 			linux,code = <KEY_RESTART>;
 		};
 	};
-
-	leds {
-		compatible = "gpio-leds";
-
-		led_status: status {
-			label = "whw03:green:status";
-			gpios = <&tlmm 36 GPIO_ACTIVE_HIGH>;
-			panic-indicator;
-		};
-
-		led_upgrade: upgrade {
-			label = "whw03:green:upgrade";
-			gpios = <&tlmm 40 GPIO_ACTIVE_HIGH>;
-		};
-	};
 };
 
-&vqmmc {
+&mdio {
 	status = "okay";
-};
-
-&sdhci {
-	status = "okay";
-
-	pinctrl-0 = <&sd_pins>;
+	pinctrl-0 = <&mdio_pins>;
 	pinctrl-names = "default";
-	cd-gpios = <&tlmm 53 GPIO_ACTIVE_HIGH>;
-	sd-ldo-gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
-	vqmmc-supply = <&vqmmc>;
 };
 
 &tlmm {
-	mdio_pins: mdio_pinmux {
+	wifi0_pins: wifi0_pinmux {
 		mux_1 {
-			pins = "gpio6";
-			function = "mdio";
-			bias-bus-hold;
+			pins = "gpio37";
+			output-high;
+			function = "wcss0_dbg16";
+			bias-pull-up;
+			drive-strength = <0x6>;
 		};
-
 		mux_2 {
-			pins = "gpio7";
-			function = "mdc";
-			bias-bus-hold;
+			pins = "gpio43";
+			function = "wifi_wci1";
+			bias-pull-up;
+			drive-strength = <0x6>;
+		};
+		mux_3 {
+			pins = "gpio52";
+			output-high;
+			function = "gpio";
+			bias-pull-up;
+			drive-strength = <0x6>;
 		};
 	};
 
-	ts_pins: ts_pinmux {
-		mux_1 {
-			pins = "gpio34";
-			output-high;
+	serial_0_pins: serial0_pinmux {
+		mux {
+			pins = "gpio16", "gpio17";
+			function = "blsp_uart0";
+			bias-disable;
 		};
-		
-		mux_2 {
-			pins = "gpio35";
-			input-enable;
-			bias-pull-up;
+	};
+
+	serial_1_pins: serial1_pinmux {
+		mux {
+			pins = "gpio8", "gpio9";
+			function = "blsp_uart1";
+			bias-disable;
 		};
 	};
 
@@ -153,262 +216,211 @@
 		};
 	};
 
-	spi_0_pins: spi_0_pinmux {
-		pinmux {
-			function = "blsp_spi1";
-			pins = "gpio45", "gpio47", "gpio46";
-			drive-strength = <12>;
-			bias-disable;
-		};
-
-		pinmux_cs {
-			function = "gpio";
-			pins = "gpio45";
-			drive-strength = <2>;
-			bias-pull-up;
-		};
-		pinmux_reset {
-			function = "gpio";
-			pins = "gpio45";
-			output-high;
-		};
-		pinmux_host_int {
-			function = "gpio";
-			pins = "gpio42";
-			input;
-		};
-	};
-
-	led_pins: led0_pinmux {
-		pinmux {
-			function = "led2";
+	/*led_pins: led_0_pinmux {
+		mux_3 {
 			pins = "gpio36";
+			function = "led2";
 			bias-pull-down;
 		};
+	};*/
+
+	spi_0_pins: spi_0_pinmux {
+		mux {
+			pins = "gpio12", "gpio13", "gpio14", "gpio15";
+			function = "blsp_spi0";
+			bias-disable;
+		};
+	};
+	
+	spi_1_pins: spi_1_pinmux {
+		mux {
+			pins = "gpio45", "gpio47", "gpio46", "gpio44";
+			function = "blsp_spi1";
+			bias-disable;
+		};
+		host_int {
+			pins = "gpio42";
+			function = "gpio";
+			input;
+		};
+		cs {
+			pins = "gpio45";
+			function = "gpio";
+			bias-pull-up;
+		};
+		reset {
+			pins = "gpio49";
+			function = "gpio";
+			output-high;
+		};
 	};
 
-	sd_pins: sd_pins {
-		pinmux {
+	sd_0_pins: sd_0_pinmux {
+		sd0 {
+			pins = "gpio23";
 			function = "sdio";
-			pins = "gpio23", "gpio24", "gpio25", "gpio26",
-				"gpio29", "gpio30", "gpio31";
-			drive-strength = <0xa>;
+			drive-strength = <10>;
 		};
-
-		pinmux_sd_cmd {
-			function = "sdio_cmd";
-			pins = "gpio28";
-			drive-strength = <0xa>;
-		};
-
-		pinmux_sd_clk {
+		sd1 {
+			pins = "gpio24";
 			function = "sdio";
+			drive-strength = <10>;
+		};
+		sd2 {
+			pins = "gpio25";
+			function = "sdio";
+			drive-strength = <10>;
+		};
+		sd3 {
+			pins = "gpio26";
+			function = "sdio";
+			drive-strength = <10>;
+		};
+		sdclk {
 			pins = "gpio27";
-			drive-strength = <0x10>;
-		};
-
-		pinmux_sd7 {
 			function = "sdio";
+			drive-strength = <16>;
+		};
+		sdcmd {
+			pins = "gpio28";
+			function = "sdio";
+			drive-strength = <10>;
+		};
+		sd4 {
+			pins = "gpio29";
+			function = "sdio";
+			drive-strength = <10>;
+		};
+		sd5 {
+			pins = "gpio30";
+			function = "sdio";
+			drive-strength = <10>;
+		};
+		sd6 {
+			pins = "gpio31";
+			function = "sdio";
+			drive-strength = <10>;
+		};
+		sd7 {
 			pins = "gpio32";
-			drive-strength = <0xa>;
+			function = "sdio";
+			drive-strength = <10>;
 			bias-disable;
 		};
 	};
 
-	wifi1_pins: wifi1_pinmux {
+	mdio_pins: mdio_pinmux {
 		mux_1 {
-		pins = "gpio37";
-		output-high;
-		function = "wcss0_dbg16";
-		bias-pull-up;
-		drive-strength = <0x6>;
+			pins = "gpio6";
+			function = "mdio";
+			bias-pull-up;
 		};
-
 		mux_2 {
-		pins = "gpio43";
-		function = "wifi_wci1";
-		bias-pull-up;
-		drive-strength = <0x6>;
-		};
-
-		mux_3 {
-		pins = "gpio52";
-		output-high;
-		function = "gpio";
-		bias-pull-up;
-		drive-strength = <0x6>;
+			pins = "gpio7";
+			function = "mdc";
+			bias-pull-up;
 		};
 	};
 };
 
-&blsp1_i2c3 {
+&pcie0 {
+	status = "okay";
+	perst-gpio = <&tlmm 38 GPIO_ACTIVE_LOW>;
+	wake-gpio = <&tlmm 40 GPIO_ACTIVE_LOW>;
+	//clkreq-gpio = <&tlmm 39 GPIO_ACTIVE_LOW>;
+
+	bridge@0,0 {
+		reg = <0x00000000 0 0 0 0>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		ranges;
+
+		wifi2: wifi@1,0 {
+			compatible = "qcom,ath10k";
+			reg = <0x00010000 0 0 0 0>;
+		};
+	};
+};
+
+&vqmmc {
 	status = "ok";
+};
+
+&sdhci {
+	vqmmc = <&vqmmc>;
+	pinctrl-0 = <&sd_0_pins>;
+	pinctrl-names = "default";
+	cd-gpios = <0x50 0x16 0x1>;
+	sd-ldo-gpios = <0x50 0x21 0x1>;
+	status = "ok";
+};
+
+&blsp_dma {
+	status = "okay";
+};
+
+&blsp1_uart1 {
+	status = "okay";
+	pinctrl-0 = <&serial_0_pins>;
+	pinctrl-names = "default";
+
+};
+
+&qpic_bam {
+	status = "okay";
+};
+
+&blsp1_spi2 {
+	pinctrl-0 = <&spi_1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+	spi@1 {
+		compatible = "spidev";
+		reg = <0x0>;
+		spi-max-frequency = <0x16e3600>;
+	};
+	em358x@0 {
+		compatible = "spidev";
+		reg = <0x0>;
+		spi-max-frequency = <0xb71b00>;
+	};
+};
+
+&blsp1_i2c3 {
 	pinctrl-0 = <&i2c_0_pins>;
-	pinctrl-1 = <&i2c_0_pins>;
-	pinctrl-names = "i2c_active", "i2c_sleep";
+	pinctrl-names = "default";
+
+	status = "okay";
+
 	pca9633 {
 		compatible = "nxp,pca9633";
 		#address-cells = <0x1>;
 		#size-cells = <0x0>;
 		reg = <0x62>;
 		nxp,hw-blink;
-		red@0 {
-			label = "red";
-			reg = <0x0>;
-			linux,default-trigger = "none";
-		};
-		green@1 {
-			label = "green";
-			reg = <0x1>;
-			linux,default-trigger = "none";
-		};
-		blue@2 {
-			label = "blue";
-			reg = <0x2>;
-			linux,default-trigger = "none";
-		};
-		unused@3 {
-			label = "unused";
-			reg = <0x3>;
-			linux,default-trigger = "none";
-		};
-	};	
-};
-
-&blsp1_spi1 {
-	status = "okay";
-
-	pinctrl-0 = <&spi_0_pins>;
-	pinctrl-names = "default";
-
-	flash@0 {
-		compatible = "jedec,spi-nor";
-		spi-max-frequency = <24000000>;
-		reg = <0>;
-
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			partition@22 {
-				label = "0:SBL1";
-				reg = <0x00000022 0x00000421>;
-				read-only;
-			};
-			partition@422 {
-				label = "0:BOOTCONFIG";
-				reg = <0x00000422 0x00000821>;
-				read-only;
-			};
-			partition@822 {
-				label = "0:QSEE";
-				reg = <0x00000822 0x00000C21>;
-				read-only;
-			};
-			partition@c22 {
-				label = "0:QSEE_1";
-				reg = <0x00000C22 0x00001021>;
-				read-only;
-			};
-			partition@1022 {
-				label = "0:CDT";
-				reg = <0x00001022 0x00001221>;
-				read-only;
-			};
-			partition@1222 {
-				label = "0:CDT_1";
-				reg = <0x00001222 0x00001421>;
-				read-only;
-			};
-			partition@1422 {
-				label = "0:BOOTCONFIG1";
-				reg = <0x00001422 0x00001621>;
-				read-only;
-			};
-			partition@1622 {
-				label = "0:APPSBL"; /* uboot env */
-				reg = <0x00001622 0x00001E21>;
-				read-only;
-			};
-			partition@1E22 {
-				label = "0:APPSBL_1"; /* uboot env */
-				reg = <0x00001E22 0x00002621>;
-				read-only;
-			};
-			partition@2622 {
-				label = "0:ART";
-				reg = <0x00002622 0x00002681>;
-				read-only;
-			};
-			partition@2822 {
-				label = "u_env";
-				reg = <0x00002822 0x00003021>;
-				read-only;
-			};
-			partition@3022 {
-				label = "s_env";
-				reg = <0x00003022 0x00003821>;
-				read-only;
-			};
-			partition@3822 {
-				label = "devinfo";
-				reg = <0x00003822 0x00004021>;
-				read-only;
-			};
-			partition@4022 {
-				label = "firmware";
-				compatible = "denx,fit";
-				reg = <0x00004022 0x00048021>;
-			};
-			partition@8022 {
-				label = "rootfs";
-				compatible = "denx,fit";
-				reg = <0x00004022 0x00048021>;
-			};
-		};
 	};
 };
 
-&pcie0 {
-        status = "okay";
 
-        perst-gpio = <&tlmm 26 GPIO_ACTIVE_LOW>;
-        wake-gpio = <&tlmm 28 GPIO_ACTIVE_LOW>;
-
-        /* Free slot for use */
-        bridge@0,0 {
-                reg = <0x00000000 0 0 0 0>;
-                #address-cells = <3>;
-                #size-cells = <2>;
-                ranges;
-		wifi2: wifi@1,0 {
-                        compatible = "qcom,ath10k";
-                        reg = <0x00010000 0 0 0 0>;
-                        ieee80211-freq-limit = <5470000 5875000>;
-                        qcom,ath10k-calibration-variant = "linksys-whw03";
-                };
-        };
-};
-
-&nand {
-	status = "disabled";
-};
-
-&blsp1_uart2 {
+&cryptobam {
 	status = "okay";
-
-	pinctrl-0 = <&serial_1_pins>;
-	pinctrl-names = "default";
 };
-
 
 &wifi0 {
-	status = "ok";
-	qcom,ath10k-calibration-variant = "linksys-whw03";
+	status = "okay";
+	pinctrl-0 = <&wifi0_pins>;
+	pinctrol-names = "default";
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
 
 &wifi1 {
-	status = "ok";
-	qcom,ath10k-calibration-variant = "linksys-whw03";
+	status = "okay";
+	//ieee80211-freq-limit = <5170000 5330000>;
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
+};
+
+&wifi2 {
+	status = "okay";
+	//ieee80211-freq-limit = <5490000 5835000>;
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
