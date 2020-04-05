@@ -37,7 +37,6 @@ case "$FIRMWARE" in
 		;;
 	linksys,whw03)
 		caldata_from_file "/dev/mmcblk0p10" 0x9000 0x2f20
-		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 4)
 		;;
 	linksys,ea8300)
 		caldata_extract "ART" 0x9000 0x2f20
@@ -108,7 +107,6 @@ case "$FIRMWARE" in
 		;;
 	linksys,whw03)
 		caldata_from_file "/dev/mmcblk0p10" 0x1000 0x2f20
-		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 2)
 		;;
 	linksys,ea8300)
 		caldata_extract "ART" 0x1000 0x2f20
@@ -193,7 +191,6 @@ case "$FIRMWARE" in
 		;;
 	linksys,whw03)
 		caldata_from_file "/dev/mmcblk0p10" 0x5000 0x2f20
-		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 3)
 		;;
 	linksys,ea8300)
 		caldata_extract "ART" 0x5000 0x2f20
