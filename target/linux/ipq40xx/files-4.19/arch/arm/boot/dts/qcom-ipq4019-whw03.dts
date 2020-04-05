@@ -1,9 +1,17 @@
-// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
-
-/*
- * Device Tree Source for Linksys WHW03 (Velop)
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018, Robert Marko <robimarko@gmail.com>
  *
- * Copyright (C) 2020 Andreas Calvo <flipy.bcn@gmail.com>
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
@@ -17,58 +25,10 @@
 	compatible = "linksys,whw03", "qcom,ipq4019";
 
 	chosen {
-		//bootargs = " rootfstype=ext4 root=/dev/mmcblk0p15  rootwait console=ttyMSM0,115200n8";
+	//	bootargs = "block2mtd.block2mtd=/dev/mmcblk0,65536,eMMC,5 mtdparts=eMMC:256k(0:SBL1)ro,256k(0:BOOTCONFIG)ro,256k(0:QSEE)ro,256k(0:QSEE_1)ro,128k(0:CDT)ro,128k(0:CDT_1)ro,128k(0:BOOTCONFIG1)ro,512k(0:APPSBL)ro,512k(0:APPSBL_1)ro,128k(0:ART)ro,512k(u_env),512k(s_env),512k(devinfo)";
 		bootargs-append = " clk_ignore_unused";
 	};
 
-	aliases {
-                /*led-boot = &led_blue;
-                led-failsafe = &led_red;
-                led-running = &led_green;
-                led-upgrade = &led_unused;*/
-                serial0 = &blsp1_uart1;
-        };
-
-	
-	leds {
-                compatible = "gpio-leds";
-		pinctrl-0 = <&led_pins>;
-		pinctrl-names = "default";
-
-        };
-
-	keys {
-		compatible = "gpio-keys";
-
-		button@0 {
-			label = "reset";
-			linux,code = <KEY_RESTART>;
-			gpios = <&tlmm 18 GPIO_ACTIVE_HIGH>;
-		};
-	};
-
-	memory {
-		device_type = "memory";
-		reg = <0x80000000 0x10000000>;
-	};
-
-	/*reserved-memory {
-		#address-cells = <0x1>;
-		#size-cells = <0x1>;
-		ranges;
-		rsvd1@87000000 {
-			reg = <0x87000000 0x500000>;
-			no-map;
-		};
-		wifi_dump@87500000 {
-			reg = <0x87500000 0x600000>;
-			no-map;
-		};
-		rsvd2@87B00000 {
-			reg = <0x87b00000 0x500000>;
-			no-map;
-		};
-	};*/
 
 	soc {
 		rng@22000 {
@@ -106,6 +66,12 @@
 			qcom,wifi_noc_memtype_m0_m2 = <TCSR_WIFI_NOC_MEMTYPE_M0_M2>;
 		};
 
+		serial@78af000 {
+			pinctrl-0 = <&serial_0_pins>;
+			pinctrl-names = "default";
+			status = "okay";
+		};
+
 		crypto@8e3a000 {
 			status = "okay";
 		};
@@ -122,6 +88,16 @@
 			status = "okay";
 		};
 
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		reset {
+			label = "reset";
+			gpios = <&tlmm 18 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART >;
+		};
 	};
 };
 
@@ -176,14 +152,6 @@
 			function = "blsp_i2c0";
 			pins = "gpio58", "gpio59";
 			bias-disable;
-		};
-	};
-
-	led_pins: led_0_pinmux {
-		mux_3 {
-			pins = "gpio36";
-			function = "led2";
-			bias-pull-down;
 		};
 	};
 
@@ -313,23 +281,12 @@
 	vqmmc = <&vqmmc>;
 	pinctrl-0 = <&sd_0_pins>;
 	pinctrl-names = "default";
-	cd-gpios = <&tlmm 0x16 GPIO_ACTIVE_HIGH>;
-	sd-ldo-gpios = <&tlmm 0x21 GPIO_ACTIVE_HIGH>;
+	cd-gpios = <0x50 0x16 0x1>;
+	sd-ldo-gpios = <0x50 0x21 0x1>;
 	status = "ok";
 };
 
 &blsp_dma {
-	status = "okay";
-};
-
-&blsp1_uart1 {
-	status = "okay";
-	pinctrl-0 = <&serial_0_pins>;
-	pinctrl-names = "default";
-
-};
-
-&qpic_bam {
 	status = "okay";
 };
 
@@ -355,31 +312,32 @@
 
 	status = "okay";
 
-	expander0: pca9633@62 {
+	pca9633 {
 		compatible = "nxp,pca9633";
 		#address-cells = <0x1>;
 		#size-cells = <0x0>;
 		reg = <0x62>;
 		nxp,hw-blink;
-	};
-};
-
-&expander0 {
-	power_red@0 {
-		label = "velop:red:power";
-		reg = <0x0>;
-	};
-	power_green@1 {
-		label = "velop:green:power";
-		reg = <0x1>;
-	};
-	power_blue@2 {
-		label = "velop:blue:power";
-		reg = <0x2>;
-	};
-	power_unused@3 {
-		label = "velop:unused:power";
-		reg = <0x3>;
+		red@0 {
+			label = "red";
+			reg = <0x0>;
+			linux,default-trigger = "none";
+		};
+		green@1 {
+			label = "green";
+			reg = <0x1>;
+			linux,default-trigger = "none";
+		};
+		blue@2 {
+			label = "blue";
+			reg = <0x2>;
+			linux,default-trigger = "none";
+		};
+		unused@3 {
+			label = "unused";
+			reg = <0x3>;
+			linux,default-trigger = "none";
+		};
 	};
 };
 
@@ -396,12 +354,25 @@
 
 &wifi1 {
 	status = "okay";
-	//ieee80211-freq-limit = <5170000 5330000>;
+	ieee80211-freq-limit = <5170000 5330000>;
 	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
 
 &wifi2 {
 	status = "okay";
-	//ieee80211-freq-limit = <5490000 5835000>;
+	ieee80211-freq-limit = <5490000 5835000>;
 	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
+/*
+&usb3_ss_phy {
+	status = "okay";
+};
+
+&usb3_hs_phy {
+	status = "okay";
+};
+
+&usb2_hs_phy {
+	status = "okay";
+};
+*/
