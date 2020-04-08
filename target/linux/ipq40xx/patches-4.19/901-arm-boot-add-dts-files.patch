@@ -42,7 +42,7 @@ Signed-off-by: John Crispin <john@phrozen.org>
 +	qcom-ipq4019-fritzrepeater-3000.dtb \
 +	qcom-ipq4019-ea8300.dtb \
 +	qcom-ipq4019-habanero-dvk.dtb \
-+	qcom-ipq4019-whw03.dtb \
++	qcom-ipq4019-whw03v2.dtb \
 +	qcom-ipq4019-map-ac2200.dtb \
 +	qcom-ipq4019-e2600ac-c1.dtb \
 +	qcom-ipq4019-e2600ac-c2.dtb \

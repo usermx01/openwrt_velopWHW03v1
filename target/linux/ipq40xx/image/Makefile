@@ -425,10 +425,11 @@ endef
 TARGET_DEVICES += linksys_ea6350v3
 
 
-define Device/linksys_whw03
+define Device/linksys_whw03v2
 	$(call Device/FitzImage)
 	DEVICE_VENDOR := Linksys
 	DEVICE_MODEL := WHW03
+	DEVICE_VARIANT := V2
 	SOC := qcom-ipq4019
 	KERNEL_SIZE := 3072k
 	IMAGE_SIZE := 87040k
@@ -436,10 +437,10 @@ define Device/linksys_whw03
 	PAGESIZE := 2048
 	UBINIZE_OPTS := -E 5    # EOD marks to "hide" factory sig at EOF
 	IMAGES := sysupgrade.bin factory.bin
-	IMAGE/factory.bin  := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-ubi | linksys-image type=WHW03
-	DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct ipq-wifi-linksys_whw03 kmod-leds-pca963x
+	IMAGE/factory.bin  := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-ubi | linksys-image type=WHW03v2
+	DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct ipq-wifi-linksys_whw03v2 kmod-leds-pca963x
 endef
-TARGET_DEVICES += linksys_whw03
+TARGET_DEVICES += linksys_whw03v2
 
 define Device/linksys_ea8300
 	$(call Device/FitzImage)
