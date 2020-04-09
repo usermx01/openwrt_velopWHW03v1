@@ -15,7 +15,8 @@ ipq40xx_setup_interfaces()
 	8dev,habanero-dvk|\
 	8dev,jalapeno|\
 	alfa-network,ap120c-ac|\
-	engenius,ens620ext)
+	engenius,ens620ext |\
+	linksys,whw03v2)
 		ucidef_set_interfaces_lan_wan "eth0" "eth1"
 		;;
 	aruba,ap-303h)
@@ -25,7 +26,6 @@ ipq40xx_setup_interfaces()
 		;;
 	asus,map-ac2200|\
 	cilab,meshpoint-one|\
-	linksys,whw03v2|\
 	openmesh,a42|\
 	openmesh,a62)
 		ucidef_set_interfaces_lan_wan "eth1" "eth0"
