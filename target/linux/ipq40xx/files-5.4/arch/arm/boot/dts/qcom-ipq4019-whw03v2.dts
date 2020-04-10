@@ -209,13 +209,13 @@
 };
 
 &gmac0 {
-	qcom,poll_required_dynamic = <0x1>;
-	qcom,phy_mdio_addr = <0x1b>;
+	qcom,poll_required_dynamic = <1>;
+	qcom,phy_mdio_addr = <27>;
 };
 
 &gmac1 {
-	qcom,poll_required_dynamic = <0x1>;
-	qcom,phy_mdio_addr = <0x1c>;
+	qcom,poll_required_dynamic = <1>;
+	qcom,phy_mdio_addr = <28>;
 	///delete-property/ qcom,phy_mdio_addr;
 	/delete-property/ qcom,poll_required;
 	/delete-property/ qcom,forced_speed;
@@ -230,24 +230,24 @@
 };
 
 &ethphy0 {
-	#reg = <0x0>;
-	reg = <0x18>;
+	#reg = <0>;
+	reg = <24>;
 };
 &ethphy1 {
-	#reg = <0x1>;
-	reg = <0x19>;
+	#reg = <1>;
+	reg = <25>;
 };
 &ethphy2 {
-	#reg = <0x2>;
-	reg = <0x1a>;
+	#reg = <2>;
+	reg = <26>;
 };
 &ethphy3 {
-	#reg = <0x4>;
-	reg = <0x1b>;
+	#reg = <3>;
+	reg = <27>;
 };
 &ethphy4 {
-	#reg = <0x4>;
-	reg = <0x1c>;
+	#reg = <4>;
+	reg = <28>;
 };
 
 &blsp_dma {
@@ -408,19 +408,19 @@
 		nxp,hw-blink;
 		led_red: red@0 {
 			label = "whw03v2:red:power";
-			reg = <0x0>;
+			reg = <0>;
 		};
 		led_green: green@1 {
 			label = "whw03v2:green:power";
-			reg = <0x1>;
+			reg = <1>;
 		};
 		led_blue: blue@2 {
 			label = "whw03v2:blue:power";
-			reg = <0x2>;
+			reg = <2>;
 		};
 		led_unusued: unused@3 {
 			label = "whw03v2:unused:power";
-			reg = <0x3>;
+			reg = <3>;
 		};
 	};
 };
