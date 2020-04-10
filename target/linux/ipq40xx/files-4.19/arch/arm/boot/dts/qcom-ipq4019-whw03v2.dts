@@ -45,7 +45,7 @@
 	//
 
 	chosen {
-		bootargs-append = " root=/dev/ubiblock0_0 rootfstype=squashfs ro earlyprintk";
+		bootargs-append = " root=/dev/ubiblock0_0 rootfstype=squashfs ro";
 	};
 
 
