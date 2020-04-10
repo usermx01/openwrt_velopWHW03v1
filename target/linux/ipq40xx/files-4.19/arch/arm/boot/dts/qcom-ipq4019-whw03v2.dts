@@ -45,7 +45,7 @@
 	//
 
 	chosen {
-		bootargs-append = " root=/dev/ubiblock0_0 rootfstype=squashfs ro";
+		bootargs-append = " root=/dev/ubiblock0_0 rootfstype=squashfs ro earlyprintk";
 	};
 
 
@@ -60,7 +60,15 @@
 
 		ess-psgmii@98000 {
 			status = "okay";
+			resets = <&gcc ESS_PSGMII_ARES>;
+        		reset-names = "psgmii_rst";
 		};
+
+		counter@4a1000 {
+			compatible = "qcom,qca-gcnt";
+			reg = <0x4a1000 0x4>;
+		};
+
 
 		tcsr@1949000 {
 			compatible = "qcom,tcsr";
@@ -104,10 +112,17 @@
 
 		ess-switch@c000000 {
 			status = "okay";
+			resets = <&gcc ESS_RESET>, <&gcc ESS_MAC1_CLK_DIS>, \
+                		<&gcc ESS_MAC2_CLK_DIS>, <&gcc ESS_MAC3_CLK_DIS>, \
+                		<&gcc ESS_MAC4_CLK_DIS>, <&gcc ESS_MAC5_CLK_DIS>;
+        		reset-names = "ess_rst","ess_mac1_clk_dis", \
+                		"ess_mac2_clk_dis","ess_mac3_clk_dis", \
+                		"ess_mac4_clk_dis", "ess_mac5_clk_dis";
 		};
 
 		edma@c080000 {
 			status = "okay";
+			/delete-property/ qcom,poll_required;
 		};
 	};
 };
@@ -190,16 +205,18 @@
 			function = "gpio";
 			output-high;
 		};
-		reset {
-			pins = "gpio49";
-			function = "gpio";
-			output-high;
-		};
 	};
 };
 
+&gmac0 {
+	qcom,poll_required_dynamic = <0x1>;
+	qcom,phy_mdio_addr = <0x1b>;
+};
+
 &gmac1 {
-	/delete-property/ qcom,phy_mdio_addr;
+	qcom,poll_required_dynamic = <0x1>;
+	qcom,phy_mdio_addr = <0x1c>;
+	///delete-property/ qcom,phy_mdio_addr;
 	/delete-property/ qcom,poll_required;
 	/delete-property/ qcom,forced_speed;
 	/delete-property/ qcom,forced_duplex;
@@ -209,7 +226,7 @@
 	status = "ok";
 	pinctrl-0 = <&mdio_pins>;
 	pinctrl-names = "default";
-	phy-reset-gpio = <0x53 0x13 0x0>;
+	reset-gpio = <&tlmm 19 GPIO_ACTIVE_LOW>;
 };
 
 &ethphy0 {
