@@ -196,6 +196,15 @@ define Device/buffalo_wsr-1166dhp
 endef
 TARGET_DEVICES += buffalo_wsr-1166dhp
 
+define Device/buffalo_wsr-2533dhpl
+  IMAGE_SIZE := 7936k
+  DEVICE_VENDOR := Buffalo
+  DEVICE_MODEL := WSR-2533DHPL
+  IMAGE/sysupgrade.bin := trx | pad-rootfs | append-metadata
+  DEVICE_PACKAGES := kmod-mt7615e wpad-basic
+endef
+TARGET_DEVICES += buffalo_wsr-2533dhpl
+
 define Device/buffalo_wsr-600dhp
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := Buffalo
@@ -308,7 +317,6 @@ define Device/gehua_ghl-r-001
   DEVICE_MODEL := GHL-R-001
   DEVICE_PACKAGES := kmod-mt7603 kmod-mt76x2 kmod-usb3 \
 	kmod-usb-ledtrig-usbport wpad-basic
-  DEFAULT := n
 endef
 TARGET_DEVICES += gehua_ghl-r-001
 
@@ -487,25 +495,27 @@ define Device/MikroTik
 	check-size
 endef
 
-define Device/mikrotik_rb750gr3
+define Device/mikrotik_routerboard-750gr3
   $(Device/MikroTik)
-  DEVICE_MODEL := RouterBOARD RB750G
-  DEVICE_VARIANT := r3
+  DEVICE_MODEL := RouterBOARD 750Gr3
   DEVICE_PACKAGES += kmod-gpio-beeper
+  SUPPORTED_DEVICES += mikrotik,rb750gr3
 endef
-TARGET_DEVICES += mikrotik_rb750gr3
+TARGET_DEVICES += mikrotik_routerboard-750gr3
 
-define Device/mikrotik_rbm11g
+define Device/mikrotik_routerboard-m11g
   $(Device/MikroTik)
   DEVICE_MODEL := RouterBOARD M11G
+  SUPPORTED_DEVICES += mikrotik,rbm11g
 endef
-TARGET_DEVICES += mikrotik_rbm11g
+TARGET_DEVICES += mikrotik_routerboard-m11g
 
-define Device/mikrotik_rbm33g
+define Device/mikrotik_routerboard-m33g
   $(Device/MikroTik)
   DEVICE_MODEL := RouterBOARD M33G
+  SUPPORTED_DEVICES += mikrotik,rbm33g
 endef
-TARGET_DEVICES += mikrotik_rbm33g
+TARGET_DEVICES += mikrotik_routerboard-m33g
 
 define Device/mqmaker_witi
   IMAGE_SIZE := 16064k
@@ -785,7 +795,7 @@ define Device/ubiquiti_edgerouterx-sfp
   $(Device/ubiquiti_edgerouterx)
   DEVICE_VENDOR := Ubiquiti
   DEVICE_MODEL := EdgeRouter X-SFP
-  DEVICE_PACKAGES += kmod-i2c-algo-pca kmod-gpio-pca953x kmod-i2c-gpio-custom
+  DEVICE_PACKAGES += kmod-i2c-algo-pca kmod-gpio-pca953x
   SUPPORTED_DEVICES += ubnt-erx-sfp
 endef
 TARGET_DEVICES += ubiquiti_edgerouterx-sfp
