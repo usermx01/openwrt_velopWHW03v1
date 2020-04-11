@@ -431,8 +431,8 @@ define Device/linksys_whw03v2
 	DEVICE_MODEL := WHW03
 	DEVICE_VARIANT := V2
 	SOC := qcom-ipq4019
-	KERNEL_SIZE := 3072k
-	IMAGE_SIZE := 87040k
+	KERNEL_SIZE := 6144k
+	IMAGE_SIZE := 158720k
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048
 	UBINIZE_OPTS := -E 5    # EOD marks to "hide" factory sig at EOF
