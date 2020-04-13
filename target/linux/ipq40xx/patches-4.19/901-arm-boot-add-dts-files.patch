@@ -10,11 +10,7 @@ Signed-off-by: John Crispin <john@phrozen.org>
 
 --- a/arch/arm/boot/dts/Makefile
 +++ b/arch/arm/boot/dts/Makefile
-<<<<<<< HEAD
-@@ -785,11 +785,45 @@ dtb-$(CONFIG_ARCH_QCOM) += \
-=======
 @@ -785,11 +785,46 @@ dtb-$(CONFIG_ARCH_QCOM) += \
->>>>>>> upstream/master
  	qcom-apq8074-dragonboard.dtb \
  	qcom-apq8084-ifc6540.dtb \
  	qcom-apq8084-mtp.dtb \
