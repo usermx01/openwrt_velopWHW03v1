@@ -1,0 +1,277 @@
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2019, Robert Marko <robimarko@gmail.com>
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "qcom-ipq4019.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/soc/qcom,tcsr.h>
+
+/ {
+	model = "Mikrotik RouterBOARD RBD52G-5HacD2HnD (hAP ac²)";
+	compatible = "mikrotik,rbd52g";
+
+	memory {
+		device_type = "memory";
+		/* The board has 128 MiB of RAM (but the FCC filing had 256 MiB) */
+		reg = <0x80000000 0x08000000>;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		led-boot = &user;
+		led-failsafe = &user;
+		led-running = &user;
+		led-upgrade = &user;
+	};
+
+	soc {
+		rng@22000 {
+			status = "okay";
+		};
+
+		mdio@90000 {
+			status = "okay";
+		};
+
+		ess-psgmii@98000 {
+			status = "okay";
+		};
+
+		counter@4a1000 {
+			compatible = "qcom,qca-gcnt";
+			reg = <0x4a1000 0x4>;
+		};
+
+		tcsr@1949000 {
+			compatible = "qcom,tcsr";
+			reg = <0x1949000 0x100>;
+			qcom,wifi_glb_cfg = <TCSR_WIFI_GLB_CFG>;
+		};
+
+		tcsr@194b000 {
+			/* select hostmode */
+			compatible = "qcom,tcsr";
+			reg = <0x194b000 0x100>;
+			qcom,usb-hsphy-mode-select = <TCSR_USB_HSPHY_HOST_MODE>;
+			status = "okay";
+		};
+
+		ess_tcsr@1953000 {
+			compatible = "qcom,tcsr";
+			reg = <0x1953000 0x1000>;
+			qcom,ess-interface-select = <TCSR_ESS_PSGMII>;
+		};
+
+		tcsr@1957000 {
+			compatible = "qcom,tcsr";
+			reg = <0x1957000 0x100>;
+			qcom,wifi_noc_memtype_m0_m2 = <TCSR_WIFI_NOC_MEMTYPE_M0_M2>;
+		};
+
+		serial@78af000 {
+			pinctrl-0 = <&serial_pins>;
+			pinctrl-names = "default";
+			status = "okay";
+		};
+
+		crypto@8e3a000 {
+			status = "okay";
+		};
+
+		wifi@a000000 {
+			status = "okay";
+		};
+
+		wifi@a800000 {
+			status = "okay";
+		};
+
+		usb2@60f8800 {
+			status = "okay";
+		};
+
+		usb3@8af8800 {
+			status = "okay";
+		};
+
+		watchdog@b017000 {
+			status = "okay";
+		};
+
+		ess-switch@c000000 {
+			status = "okay";
+		};
+
+		edma@c080000 {
+			status = "okay";
+		};
+	};
+
+	keys {
+		compatible = "gpio-keys";
+
+		mode {
+			label = "mode";
+			gpios = <&tlmm 5 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RFKILL>;
+		};
+
+		reset {
+			label = "reset";
+			gpios = <&tlmm 63 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		power: power {
+			label = "rbd52g:green:power";
+			gpios = <&tlmm 0 GPIO_ACTIVE_HIGH>;
+			default-state = "keep";
+			panic-indicator;
+		};
+
+		user: user {
+			label = "rbd52g:green:user";
+			gpios = <&tlmm 3 GPIO_ACTIVE_HIGH>;
+		};
+	};
+};
+
+
+&tlmm {
+	serial_pins: serial_pinmux {
+		mux {
+			pins = "gpio60", "gpio61";
+			function = "blsp_uart0";
+			bias-disable;
+		};
+	};
+
+	spi_0_pins: spi_0_pinmux {
+		pin {
+			function = "blsp_spi0";
+			pins = "gpio54", "gpio55", "gpio56", "gpio57";
+			bias-disable;
+		};
+		pin_cs {
+			function = "gpio";
+			pins = "gpio54";
+			bias-disable;
+			output-high;
+		};
+	};
+};
+
+&blsp_dma {
+	status = "okay";
+};
+
+&blsp1_spi1 {
+	pinctrl-0 = <&spi_0_pins>;
+	pinctrl-names = "default";
+	cs-gpios = <&tlmm 54 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+
+	m25p80@0 {
+		reg = <0>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <24000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition0@0 {
+				label = "Qualcomm-boot1";
+				reg = <0x00000000 0x23000>;
+				read-only;
+			};
+
+			partition1@23000 {
+				label = "Qualcomm-boot2";
+				reg = <0x00023000 0x5d000>;
+				read-only;
+			};
+
+			partition2@80000 {
+				label = "RouterBoot";
+				reg = <0x00080000 0x0e000>;
+				read-only;
+			};
+
+			partition3@8e000 {
+				label = "hard_config";
+				reg = <0x0008e000 0x01000>;
+			};
+
+			partition4@90000 {
+				label = "dts_config";
+				reg = <0x00090000 0x10000>;
+				read-only;
+			};
+
+			partition5@bd000 {
+				label = "soft_config";
+				reg = <0x000bd000 0x01000>;
+			};
+
+			partition6@100000 {
+				compatible = "mikrotik,minor";
+				label = "firmware";
+				reg = <0x00100000 0xf00000>;
+			};
+		};
+	};
+
+};
+
+&cryptobam {
+	status = "okay";
+};
+
+&qpic_bam {
+	status = "okay";
+};
+
+&wifi0 {
+        status = "okay";
+        qcom,ath10k-calibration-variant = "MikroTik-RBD52G-5HacD2HnD";
+};
+
+&wifi1 {
+        status = "okay";
+        qcom,ath10k-calibration-variant = "MikroTik-RBD52G-5HacD2HnD";
+};
+
+&usb3_hs_phy {
+	status = "okay";
+};
+
+&usb3_ss_phy {
+        status = "okay";
+};
+
+&usb2_hs_phy {
+	status = "okay";
+};
