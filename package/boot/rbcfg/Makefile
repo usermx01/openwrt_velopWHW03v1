@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rbcfg
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 
@@ -21,7 +21,7 @@ define Package/rbcfg
   CATEGORY:=Utilities
   SUBMENU:=Boot Loaders
   TITLE:=RouterBOOT configuration tool
-  DEPENDS:=@(TARGET_ar71xx||TARGET_ath79)
+  DEPENDS:=@TARGET_ar71xx||@TARGET_ipq40xx
 endef
 
 define Package/rbcfg/description
