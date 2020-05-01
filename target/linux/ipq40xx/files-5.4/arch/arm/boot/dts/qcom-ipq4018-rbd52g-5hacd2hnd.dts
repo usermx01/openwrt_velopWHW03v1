@@ -173,12 +173,6 @@
 			pins = "gpio54", "gpio55", "gpio56", "gpio57";
 			bias-disable;
 		};
-		pin_cs {
-			function = "gpio";
-			pins = "gpio54";
-			bias-disable;
-			output-high;
-		};
 	};
 };
 
@@ -189,18 +183,18 @@
 &blsp1_spi1 {
 	pinctrl-0 = <&spi_0_pins>;
 	pinctrl-names = "default";
-	cs-gpios = <&tlmm 54 GPIO_ACTIVE_HIGH>;
+	//cs-gpios = <&tlmm 54 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
 	m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
 		reg = <0>;
 		compatible = "jedec,spi-nor";
 		spi-max-frequency = <24000000>;
 
 		partitions {
 			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
 
 			partition0@0 {
 				label = "Qualcomm-boot1";
@@ -256,12 +250,12 @@
 
 &wifi0 {
         status = "okay";
-        qcom,ath10k-calibration-variant = "MikroTik-RBD52G-5HacD2HnD";
+        //qcom,ath10k-calibration-variant = "MikroTik-RBD52G-5HacD2HnD";
 };
 
 &wifi1 {
         status = "okay";
-        qcom,ath10k-calibration-variant = "MikroTik-RBD52G-5HacD2HnD";
+        //qcom,ath10k-calibration-variant = "MikroTik-RBD52G-5HacD2HnD";
 };
 
 &usb3_hs_phy {
@@ -272,6 +266,12 @@
         status = "okay";
 };
 
-&usb2_hs_phy {
+&pcie0 {
+        reg = <0x80000 0x2000 0x99000 0x800 0x40000000 0xf1d 0x40000f20 0xa8 0x40100000 0x1000 0x40200000 0x100000 0x40300000 0xd00000>;
+	reg-names = "parf", "phy", "dm_core", "elbi", "config", "io", "bars";
 	status = "okay";
+};
+
+&sdhci {
+	status = "disabled";
 };
