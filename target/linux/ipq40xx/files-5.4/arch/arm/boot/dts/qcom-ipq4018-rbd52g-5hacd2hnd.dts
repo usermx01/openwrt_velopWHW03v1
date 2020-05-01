@@ -22,7 +22,7 @@
 
 / {
 	model = "Mikrotik RouterBOARD RBD52G-5HacD2HnD (hAP ac²)";
-	compatible = "mikrotik,rbd52g";
+	compatible = "mikrotik,rbd52g-5hacd2hnd";
 
 	memory {
 		device_type = "memory";
@@ -214,7 +214,7 @@
 				read-only;
 			};
 
-			partition3@8e000 {
+			hard_config: partition3@8e000 {
 				label = "hard_config";
 				reg = <0x0008e000 0x01000>;
 			};
