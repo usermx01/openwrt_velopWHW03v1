@@ -503,6 +503,17 @@ define Device/iodata_wn-ac733gr3
 endef
 TARGET_DEVICES += iodata_wn-ac733gr3
 
+define Device/iptime_a1004ns
+  SOC := mt7620a
+  IMAGE_SIZE := 16192k
+  UIMAGE_NAME := a1004ns
+  DEVICE_VENDOR := ipTIME
+  DEVICE_MODEL := A1004ns
+  DEVICE_PACKAGES := kmod-mt76x0e kmod-usb2 kmod-usb-ohci \
+	kmod-usb-ledtrig-usbport
+endef
+TARGET_DEVICES += iptime_a1004ns
+
 define Device/iptime_a104ns
   SOC := mt7620a
   IMAGE_SIZE := 8000k
@@ -687,6 +698,7 @@ define Device/nexx_wt3020-4m
   DEVICE_MODEL := WT3020
   DEVICE_VARIANT := 4M
   SUPPORTED_DEVICES += wt3020 wt3020-4M
+  DEFAULT := n
 endef
 TARGET_DEVICES += nexx_wt3020-4m
 
@@ -975,6 +987,7 @@ define Device/vonets_var11n-300
   BLOCKSIZE := 4k
   DEVICE_VENDOR := Vonets
   DEVICE_MODEL := VAR11N-300
+  DEFAULT := n
 endef
 TARGET_DEVICES += vonets_var11n-300
 

@@ -399,7 +399,7 @@ $(eval $(call KernelPackage,ip6-vti))
 define KernelPackage/xfrm-interface
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=IPsec XFRM Interface
-  DEPENDS:=+kmod-ipsec4 +@IPV6:kmod-ipsec6 @!LINUX_4_14
+  DEPENDS:=+kmod-ipsec4 +IPV6:kmod-ipsec6 @!LINUX_4_14
   KCONFIG:=CONFIG_XFRM_INTERFACE
   FILES:=$(LINUX_DIR)/net/xfrm/xfrm_interface.ko
   AUTOLOAD:=$(call AutoProbe,xfrm_interface)
@@ -866,16 +866,6 @@ define KernelPackage/sched-ctinfo
   AUTOLOAD:=$(call AutoLoad,71, act_ctinfo)
 endef
 $(eval $(call KernelPackage,sched-ctinfo))
-
-define KernelPackage/sched-police
-  SUBMENU:=$(NETWORK_SUPPORT_MENU)
-  TITLE:=Traffic shaper police support
-  DEPENDS:=+kmod-sched-core
-  KCONFIG:=CONFIG_NET_ACT_POLICE
-  FILES:=$(LINUX_DIR)/net/sched/act_police.ko
-  AUTOLOAD:=$(call AutoLoad,71, act_police)
-endef
-$(eval $(call KernelPackage,sched-police))
 
 define KernelPackage/sched-ipset
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
