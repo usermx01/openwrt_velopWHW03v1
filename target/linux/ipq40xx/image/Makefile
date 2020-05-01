@@ -540,7 +540,7 @@ define Device/mikrotik_rbd52g-5hacd2hnd
         DEVICE_DTS := qcom-ipq4018-rbd52g-5hacd2hnd
         AUX_LOADER_UART := 1
         DEVICE_TITLE := MikroTik RouterBOARD RBD52G-5HacD2HnD (hAP ac²)
-        DEVICE_PACKAGES := rbcfg usbutils ath10k-firmware-qca4019-ct
+        DEVICE_PACKAGES := rbcfg rbextract usbutils ath10k-firmware-qca4019-ct
 endef
 TARGET_DEVICES += mikrotik_rbd52g-5hacd2hnd
 

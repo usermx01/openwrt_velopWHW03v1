@@ -141,7 +141,7 @@ ipq40xx_setup_macs()
 		wan_mac=$(mtd_get_mac_ascii devinfo hw_mac_addr)
 		lan_mac=$(macaddr_add "$wan_mac" 1)
 		;;
-	mikrotik,rbd52g)
+	mikrotik,rbd52g-5hacd2hnd)
                 wan_mac=$(mtd_get_mac_binary hard_config 16)
                 lan_mac=$(macaddr_add "$wan_mac" 1)
                 ;;
