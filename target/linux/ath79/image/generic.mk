@@ -201,6 +201,15 @@ define Device/avm_fritz4020
 endef
 TARGET_DEVICES += avm_fritz4020
 
+define Device/avm_fritz450e
+  $(Device/avm)
+  SOC := qca9556
+  IMAGE_SIZE := 15232k
+  DEVICE_MODEL := FRITZ!WLAN Repeater 450E
+  SUPPORTED_DEVICES += fritz450e
+endef
+TARGET_DEVICES += avm_fritz450e
+
 define Device/buffalo_bhr-4grv
   SOC := ar7242
   DEVICE_VENDOR := Buffalo
@@ -820,7 +829,7 @@ define Device/nec_wg800hp
   IMAGE/factory.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | \
 	append-rootfs | pad-rootfs | check-size | \
 	xor-image -p 6A57190601121E4C004C1E1201061957 -x | nec-fw LASER_ATERM
-  DEVICE_PACKAGES := kmod-ath10k-ct-smallbuffers ath10k-firmware-qca9887-ct-htt
+  DEVICE_PACKAGES := kmod-ath10k-ct-smallbuffers ath10k-firmware-qca9887-ct-full-htt
 endef
 TARGET_DEVICES += nec_wg800hp
 
@@ -1148,6 +1157,12 @@ define Device/teltonika_rut955
 	check-size
 endef
 TARGET_DEVICES += teltonika_rut955
+
+define Device/teltonika_rut955-h7v3c0
+  $(Device/teltonika_rut955)
+  DEVICE_VARIANT := H7V3C0
+endef
+TARGET_DEVICES += teltonika_rut955-h7v3c0
 
 define Device/trendnet_tew-823dru
   SOC := qca9558
