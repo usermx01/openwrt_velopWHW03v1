@@ -521,26 +521,26 @@ define Device/mobipromo_cm520-79f
 endef
 TARGET_DEVICES += mobipromo_cm520-79f
 
-define Device/MikrotikNAND
-        $(call Device/FitImageLzma)
-        BLOCKSIZE := 256k
-        PAGESIZE := 4096
-        KERNEL_INITRAMFS_SUFFIX := -fit-uImage.elf
-        PLATFORM := mikrotik-ipq4xxx
-        KERNEL_INITRAMFS = $$(KERNEL) | ipq-aux-loader-kernel elf
-        IMAGES := sysupgrade.bin
-        IMAGE/sysupgrade.bin/squashfs := append-kernel | ipq-aux-loader-kernel ubi | \
-                        sysupgrade-tar kernel=$$$$@ | append-metadata
-        DEVICE_PACKAGES := rbcfg
+define Device/MikrotikNOR
+	$(call Device/FitImageLzma)
+	DEVICE_VENDOR := MikroTik
+	BLOCKSIZE := 64k
+	IMAGE_SIZE := 16128k
+	AUX_LOADER_UART := NONE
+	KERNEL_INITRAMFS_SUFFIX := -fit-uImage.elf
+	PLATFORM := mikrotik-ipq4xxx
+	KERNEL = kernel-bin | lzma | fit lzma $$(DTS_DIR)/$$(DEVICE_DTS).dtb | ipq-aux-loader-kernel elf
+	IMAGES = sysupgrade.bin
+	IMAGE/sysupgrade.bin := append-kernel | kernel2minor -s 1024 | pad-to $$$$(BLOCKSIZE) | \
+	append-rootfs | pad-rootfs | append-metadata | check-size $$$$(IMAGE_SIZE)
+	DEVICE_PACKAGES := rbcfg
 endef
 
-# TODO: this device is actually using a NOR flash
 define Device/mikrotik_rbd52g-5hacd2hnd
-        $(call Device/MikrotikNAND)
+        $(call Device/MikrotikNOR)
         DEVICE_DTS := qcom-ipq4018-rbd52g-5hacd2hnd
-        AUX_LOADER_UART := 1
         DEVICE_TITLE := MikroTik RouterBOARD RBD52G-5HacD2HnD (hAP ac²)
-        DEVICE_PACKAGES := rbcfg rbextract usbutils ath10k-firmware-qca4019-ct
+        DEVICE_PACKAGES := rbextract usbutils ath10k-firmware-qca4019-ct
 endef
 TARGET_DEVICES += mikrotik_rbd52g-5hacd2hnd
 

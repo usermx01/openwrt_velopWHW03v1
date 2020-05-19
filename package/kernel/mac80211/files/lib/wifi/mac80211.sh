@@ -1,6 +1,4 @@
 #!/bin/sh
-. /lib/netifd/mac80211.sh
-
 append DRIVERS "mac80211"
 
 lookup_phy() {
@@ -11,8 +9,11 @@ lookup_phy() {
 	local devpath
 	config_get devpath "$device" path
 	[ -n "$devpath" ] && {
-		phy="$(mac80211_path_to_phy "$devpath")"
-		[ -n "$phy" ] && return
+		for phy in $(ls /sys/class/ieee80211 2>/dev/null); do
+			case "$(readlink -f /sys/class/ieee80211/$phy/device)" in
+				*$devpath) return;;
+			esac
+		done
 	}
 
 	local macaddr="$(config_get "$device" macaddr | tr 'A-Z' 'a-z')"
@@ -75,23 +76,37 @@ detect_mac80211() {
 		config_foreach check_mac80211_device wifi-device
 		[ "$found" -gt 0 ] && continue
 
-		mode_band="g"
-		channel="11"
-		htmode=""
-		ht_capab=""
+		if iw phy "$dev" info | grep -cim1 '58320 MHz'; then
+			mode_band="ad"
+			channel="1"
+			htmode=""
+			ht_capab=""
+		else
+			mode_band="g"
+			channel="11"
+			htmode=""
+			ht_capab=""
 
-		iw phy "$dev" info | grep -q 'Capabilities:' && htmode=HT20
+			iw phy "$dev" info | grep -q 'Capabilities:' && htmode=HT20
 
-		iw phy "$dev" info | grep -q '5180 MHz' && {
-			mode_band="a"
-			channel="36"
-			iw phy "$dev" info | grep -q 'VHT Capabilities' && htmode="VHT80"
-		}
+			iw phy "$dev" info | grep -q '5180 MHz' && {
+				mode_band="a"
+				channel="36"
+				iw phy "$dev" info | grep -q 'VHT Capabilities' && htmode="VHT80"
+			}
 
-		[ -n "$htmode" ] && ht_capab="set wireless.radio${devidx}.htmode=$htmode"
-
-		path="$(mac80211_phy_to_path "$dev")"
+			[ -n "$htmode" ] && ht_capab="set wireless.radio${devidx}.htmode=$htmode"
+		fi
+		if [ -x /usr/bin/readlink -a -h /sys/class/ieee80211/${dev} ]; then
+			path="$(readlink -f /sys/class/ieee80211/${dev}/device)"
+		else
+			path=""
+		fi
 		if [ -n "$path" ]; then
+			path="${path##/sys/devices/}"
+			case "$path" in
+				platform*/pci*) path="${path##platform/}";;
+			esac
 			dev_id="set wireless.radio${devidx}.path='$path'"
 		else
 			dev_id="set wireless.radio${devidx}.macaddr=$(cat /sys/class/ieee80211/${dev}/macaddress)"

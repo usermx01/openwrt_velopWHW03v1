@@ -22,7 +22,7 @@ define Package/rbextract
   CATEGORY:=Utilities
   SUBMENU:=Boot Loaders
   TITLE:=RouterBOOT ART Extractor
-  DEPENDS:=@TARGET_ath79 +liblzo
+  DEPENDS:=@(TARGET_ath79||TARGET_ipq40xx) +liblzo
 endef
 
 define Package/rbextract/description
