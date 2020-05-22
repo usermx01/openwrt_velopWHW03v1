@@ -29,6 +29,20 @@ define AddDepends/hwmon
   DEPENDS:=+kmod-hwmon-core $(1)
 endef
 
+define KernelPackage/hwmon-ad7418
+  TITLE:=AD741x monitoring support
+  KCONFIG:=CONFIG_SENSORS_AD7418
+  FILES:=$(LINUX_DIR)/drivers/hwmon/ad7418.ko
+  AUTOLOAD:=$(call AutoLoad,60,ad7418 ad7418)
+  $(call AddDepends/hwmon,+kmod-i2c-core)
+endef
+
+define KernelPackage/hwmon-ad7418/description
+ Kernel module for Analog Devices AD7416, AD7417 and AD7418 temperature monitor chip
+endef
+
+$(eval $(call KernelPackage,hwmon-ad7418))
+
 define KernelPackage/hwmon-ads1015
   TITLE:=Texas Instruments ADS1015
   KCONFIG:= CONFIG_SENSORS_ADS1015
@@ -77,6 +91,22 @@ endef
 $(eval $(call KernelPackage,hwmon-adt7475))
 
 
+define KernelPackage/hwmon-dme1737
+  TITLE:=SMSC DME1737 and compatible monitoring support
+  KCONFIG:=CONFIG_SENSORS_DME1737
+  FILES:= \
+	$(LINUX_DIR)/drivers/hwmon/dme1737.ko
+  AUTOLOAD:=$(call AutoProbe,dme1737)
+  $(call AddDepends/hwmon,+kmod-i2c-core +kmod-hwmon-vid)
+endef
+
+define KernelPackage/hwmon-dme1737/description
+ SMSC DME1737, SCH3112, SCH3114, SCH3116, SCH5027 monitoring support
+endef
+
+$(eval $(call KernelPackage,hwmon-dme1737))
+
+
 define KernelPackage/hwmon-drivetemp
   TITLE:=Hard disk drives with temperature sensor
   KCONFIG:=CONFIG_SENSORS_DRIVETEMP
@@ -105,6 +135,21 @@ define KernelPackage/hwmon-gpiofan/description
 endef
 
 $(eval $(call KernelPackage,hwmon-gpiofan))
+
+
+define KernelPackage/hwmon-f71882fg
+  TITLE:=F71882FG compatible monitoring support
+  KCONFIG:=CONFIG_SENSORS_F71882FG
+  FILES:=$(LINUX_DIR)/drivers/hwmon/f71882fg.ko
+  AUTOLOAD:=$(call AutoProbe,f71882fg)
+  $(call AddDepends/hwmon,@TARGET_x86)
+endef
+
+define KernelPackage/hwmon-f71882fg/description
+ Kernel module for hardware monitoring via many Fintek Super-IO chips.
+endef
+
+$(eval $(call KernelPackage,hwmon-f71882fg))
 
 
 define KernelPackage/hwmon-ina209

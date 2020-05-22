@@ -41,11 +41,14 @@ ath79_setup_interfaces()
 	tplink,tl-wa860re-v1|\
 	tplink,tl-wa901nd-v1|\
 	tplink,tl-wa901nd-v2|\
+	tplink,tl-wa901nd-v4|\
+	tplink,tl-wa901nd-v5|\
 	tplink,tl-wr703n)
 		ucidef_set_interface_lan "eth0"
 		;;
 	tplink,tl-mr3220-v1|\
 	tplink,tl-mr3420-v1|\
+	tplink,tl-mr3420-v3|\
 	tplink,tl-wr841-v7|\
 	tplink,tl-wr841-v9|\
 	tplink,tl-wr841-v10|\
