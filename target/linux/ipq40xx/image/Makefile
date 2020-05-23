@@ -25,7 +25,7 @@ define Build/ipq-aux-loader-common
 		TEXT_BASE2="0x00000000" \
 		BOARD="$(BOARDNAME)" PLATFORM="$(PLATFORM)" \
 		BLOCKSIZE="$(BLOCKSIZE)" PAGESIZE="$(PAGESIZE)" \
-		UART="$(AUX_LOADER_UART)"	\
+		UART="$(AUX_LOADER_UART)" \
 		$(1) LOADER_TYPE=$(2) compile loader.$(2)
 	mv "$@.$(2)" "$@"
 	rm -rf $@.src
@@ -543,13 +543,12 @@ define Device/MikrotikNOR
 	DEVICE_PACKAGES := rbcfg
 endef
 
-define Device/mikrotik_rbd52g-5hacd2hnd
-        $(call Device/MikrotikNOR)
-        DEVICE_DTS := qcom-ipq4018-rbd52g-5hacd2hnd
-        DEVICE_TITLE := MikroTik RouterBOARD RBD52G-5HacD2HnD (hAP ac²)
-        DEVICE_PACKAGES := rbextract usbutils ath10k-firmware-qca4019-ct
+define Device/mikrotik_hap-ac2
+	$(call Device/MikrotikNOR)
+	DEVICE_MODEL := hAP ac2
+	SOC := qcom-ipq4018
 endef
-TARGET_DEVICES += mikrotik_rbd52g-5hacd2hnd
+TARGET_DEVICES += mikrotik_hap-ac2
 
 define Device/netgear_ex61x0v2
 	$(call Device/DniImage)
