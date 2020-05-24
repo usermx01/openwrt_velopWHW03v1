@@ -196,49 +196,27 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			partition0@0 {
-				label = "Qualcomm-boot1";
-				reg = <0x00000000 0x23000>;
-				read-only;
-			};
-
-			partition1@23000 {
-				label = "Qualcomm-boot2";
-				reg = <0x00023000 0x5d000>;
-				read-only;
-			};
-
-			partition2@80000 {
+			partition0@80000 {
 				label = "RouterBoot";
-				reg = <0x00080000 0x0e000>;
+				reg = <0x80000 0xe000>;
 				read-only;
 			};
 
-			hard_config: partition3@8e000 {
-				label = "hard_config";
-				reg = <0x0008e000 0x01000>;
-			};
-
-			partition4@90000 {
-				label = "dts_config";
-				reg = <0x00090000 0x10000>;
+			hard_config {
 				read-only;
 			};
 
-			partition5@bd000 {
-				label = "soft_config";
-				reg = <0x000bd000 0x01000>;
+			dtb_config {
+				read-only;
 			};
 
-			partition6@100000 {
+			soft_config {
+			};
+
+			partition4@1000000 {
 				compatible = "mikrotik,minor";
 				label = "firmware";
-				reg = <0x00100000 0xf00000>;
-			};
-
-			partition7@0 {
-				label = "whole_flash";
-				reg = <0x0 0x1000000>;
+				reg = <0x100000 0xf00000>;
 			};
 		};
 	};
