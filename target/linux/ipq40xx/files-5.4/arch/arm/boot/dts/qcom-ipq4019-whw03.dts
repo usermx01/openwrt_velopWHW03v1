@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 
 /*
- * Device Tree Source for Linksys WHW03 V2 (Velop)
+ * Device Tree Source for Linksys WHW03 (Velop)
  *
  * Copyright (C) 2020 Andreas Calvo <flipy.bcn@gmail.com>
  *
@@ -18,6 +18,7 @@
 	model = "Linksys WHW03 (Velop)";
 	compatible = "linksys,whw03", "qcom,ipq4019";
 
+
 	aliases {
 		led-boot = &led_blue;
 		led-failsafe = &led_red;
@@ -25,28 +26,30 @@
 		led-upgrade = &led_red;
 	};
 
-	memory {
-		device_type = "memory";
-		reg = <0x80000000 0x10000000>;
-	};	
 
 	keys {
 		compatible = "gpio-keys";
 
 		button@1 {
-			label = "wps";
-			linux,code = <KEY_WPS_BUTTON>;
+			label = "reset";
+			linux,code = <KEY_RESTART>;
 			gpios = <&tlmm 18 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
 
+	chosen {
+		//bootargs = " rootfstype=ext4 root=/dev/mmcblk0p15  rootwait console=ttyMSM0,115200n8";
+		bootargs-append = " clk_ignore_unused";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x10000000>;
+	};
+
 	soc {
 		rng@22000 {
-			status = "okay";
-		};
-
-		mdio@90000 {
 			status = "okay";
 		};
 
@@ -72,6 +75,7 @@
 			compatible = "qcom,tcsr";
 			reg = <0x194b000 0x100>;
 			qcom,usb-hsphy-mode-select = <TCSR_USB_HSPHY_HOST_MODE>;
+			status = "okay";
 		};
 
 		ess_tcsr@1953000 {
@@ -113,6 +117,28 @@
 };
 
 &tlmm {
+	wifi0_pins: wifi0_pinmux {
+		mux_1 {
+			pins = "gpio37";
+			output-high;
+			function = "wcss0_dbg16";
+			bias-pull-up;
+			drive-strength = <6>;
+		};
+		mux_2 {
+			pins = "gpio43";
+			function = "wifi_wci1";
+			bias-pull-up;
+			drive-strength = <6>;
+		};
+		mux_3 {
+			pins = "gpio52";
+			output-high;
+			function = "gpio";
+			bias-pull-up;
+			drive-strength = <6>;
+		};
+	};
 	mdio_pins: mdio_pinmux {
 		mux_1 {
 			pins = "gpio6";
@@ -186,88 +212,68 @@
 	};
 
 	sd_0_pins: sd_0_pinmux {
-		sd0 {
-			pins = "gpio23";
-			function = "sdio";
-			drive-strength = <10>;
-		};
-		sd1 {
-			pins = "gpio24";
-			function = "sdio";
-			drive-strength = <10>;
-		};
-		sd2 {
-			pins = "gpio25";
-			function = "sdio";
-			drive-strength = <10>;
-		};
-		sd3 {
-			pins = "gpio26";
-			function = "sdio";
-			drive-strength = <10>;
-		};
-		sdclk {
-			pins = "gpio27";
-			function = "sdio";
-			drive-strength = <16>;
-		};
-		sdcmd {
-			pins = "gpio28";
-			function = "sdio";
-			drive-strength = <10>;
-		};
-		sd4 {
-			pins = "gpio29";
-			function = "sdio";
-			drive-strength = <10>;
-		};
-		sd5 {
-			pins = "gpio30";
-			function = "sdio";
-			drive-strength = <10>;
-		};
-		sd6 {
-			pins = "gpio31";
-			function = "sdio";
-			drive-strength = <10>;
-		};
-		sd7 {
-			pins = "gpio32";
-			function = "sdio";
-			drive-strength = <10>;
-			bias-disable;
-		};
-	};
+                pinmux {
+                        function = "sdio";
+                        pins = "gpio23", "gpio24", "gpio25", "gpio26",
+                                "gpio28", "gpio29", "gpio30", "gpio31";
+                        drive-strength = <10>;
+                };
 
-	wifi0_pins: wifi1_pinmux {
-		mux_1 {
-			pins = "gpio37";
-			output-high;
-			function = "wcss0_dbg16";
-			bias-pull-up;
-			drive-strength = <0x6>;
-		};
-		mux_2 {
-			pins = "gpio43";
-			function = "wifi_wci1";
-			bias-pull-up;
-			drive-strength = <0x6>;
-		};
-		mux_3 {
-			pins = "gpio52";
-			output-high;
-			function = "gpio";
-			bias-pull-up;
-			drive-strength = <0x6>;
-		};
-	};
+                pinmux_sd_clk {
+                        function = "sdio";
+                        pins = "gpio27";
+                        drive-strength = <16>;
+                };
+
+                pinmux_sd7 {
+                        function = "sdio";
+                        pins = "gpio32";
+                        drive-strength = <10>;
+                        bias-disable;
+                };
+        };
 };
 
 &mdio {
-	status = "ok";
+	status = "okay";
 	pinctrl-0 = <&mdio_pins>;
 	pinctrl-names = "default";
-	reset-gpios = <&tlmm 41 GPIO_ACTIVE_LOW>;
+	qcom,mdio_offset = <0x18>;
+	qcom,mdio_offset_limit = <0x5>;
+	reset-gpios = <&tlmm 19 GPIO_ACTIVE_LOW>;
+};
+
+&vqmmc {
+	status = "okay";
+	regulator-min-microvolt = <1800000>;
+	states = <0x2dc6c0 0x3 0x1b7740 0x1>;
+	mask = <0x3>;
+};
+
+&sdhci {
+	vqmmc-supply = <&vqmmc>;
+	pinctrl-0 = <&sd_0_pins>;
+	pinctrl-names = "default";
+	cd-gpios = <&tlmm 22 GPIO_ACTIVE_HIGH>;
+	sd-ldo-gpios = <&tlmm 33 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&blsp1_spi2 {
+	pinctrl-0 = <&spi_1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+	spi@1 {
+		compatible = "spidev";
+		reg = <0x0>;
+		spi-max-frequency = <24000000>;
+	};
+
+	em358x@0 {
+		compatible = "spidev";
+		reg = <0x0>;
+		spi-max-frequency = <12000000>;
+	};
 };
 
 &blsp_dma {
@@ -277,8 +283,7 @@
 &blsp1_uart1 {
 	status = "okay";
 	pinctrl-0 = <&serial_0_pins>;
-	pinctrl-1 = <&serial_0_pins>;
-	pinctrl-names = "default", "sleep";
+	pinctrl-names = "default";
 
 };
 
@@ -291,31 +296,6 @@
 
 &cryptobam {
 	status = "okay";
-};
-
-&blsp1_spi2 {
-	pinctrl-0 = <&spi_1_pins>;
-	pinctrl-names = "default";
-	status = "okay";
-	spi@1 {
-		compatible = "spidev";
-		reg = <0>;
-		spi-max-frequency = <24000000>;
-	};
-	em358x@0 {
-		compatible = "spidev";
-		reg = <0>;
-		spi-max-frequency = <12000000>;
-	};
-};
-
-&sdhci {
-	vqmmc = <&vqmmc>;
-	pinctrl-0 = <&sd_0_pins>;
-	pinctrl-names = "default";
-	cd-gpios = <&tlmm 22 GPIO_ACTIVE_HIGH>;
-	sd-ldo-gpios = <&tlmm 33 GPIO_ACTIVE_HIGH>;
-	status = "ok";
 };
 
 &pcie0 {
@@ -342,10 +322,10 @@
 	status = "okay";
 };
 
+
 &blsp1_i2c3 {
 	pinctrl-0 = <&i2c_0_pins>;
-	pinctrl-1 = <&i2c_0_pins>;
-	pinctrl-names = "default", "sleep";
+	pinctrl-names = "default";
 
 	status = "okay";
 
@@ -388,19 +368,19 @@
 
 &wifi0 {
 	status = "okay";
+	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 	pinctrl-0 = <&wifi0_pins>;
 	pinctrl-names = "default";
-	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
 
 &wifi1 {
 	status = "okay";
-	ieee80211-freq-limit = <5170000 5330000>;
+	//ieee80211-freq-limit = <5170000 5330000>;
 	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
 
 &wifi2 {
 	status = "okay";
-	ieee80211-freq-limit = <5490000 5835000>;
+	//ieee80211-freq-limit = <5490000 5835000>;
 	qcom,ath10k-calibration-variant = "linksys-whw03-fcc";
 };
