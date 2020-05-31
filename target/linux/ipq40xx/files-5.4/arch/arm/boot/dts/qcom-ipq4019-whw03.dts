@@ -254,8 +254,8 @@
 	vqmmc-supply = <&vqmmc>;
 	pinctrl-0 = <&sd_0_pins>;
 	pinctrl-names = "default";
-	cd-gpios = <&tlmm 22 GPIO_ACTIVE_HIGH>;
-	sd-ldo-gpios = <&tlmm 33 GPIO_ACTIVE_HIGH>;
+	cd-gpios = <&tlmm 22 GPIO_ACTIVE_LOW>;
+	sd-ldo-gpios = <&tlmm 33 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 
