@@ -39,7 +39,7 @@
 
 
 	chosen {
-		//bootargs = " rootfstype=ext4 root=/dev/mmcblk0p15  rootwait console=ttyMSM0,115200n8";
+		bootargs = " rootfstype=ext4 root=/dev/mmcblk0p15 rootwait console=ttyMSM0,115200n8";
 		bootargs-append = " clk_ignore_unused";
 	};
 
