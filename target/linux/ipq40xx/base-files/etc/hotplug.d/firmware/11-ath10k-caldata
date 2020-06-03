@@ -109,13 +109,13 @@ case "$FIRMWARE" in
 		caldata_extract "ART" 0x1000 0x2f20
 		ath10k_patch_mac $(macaddr_add $(mtd_get_mac_ascii u-boot-env ethaddr) +2)
 		;;
-	linksys,whw03)
-		ath10k_patch_mac $(macaddr_setbit_la $(macaddr_add "$(cat /sys/class/net/eth0/address)" 2))
-		caldata_from_file "/dev/mmcblk0p10" 0x1000 0x2f20
-		;;
 	linksys,ea8300)
 		caldata_extract "ART" 0x1000 0x2f20
 		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 2)
+		;;
+	linksys,whw03)
+		caldata_from_file "/dev/mmcblk0p10" 0x1000 0x2f20
+		ath10k_patch_mac $(macaddr_setbit_la $(macaddr_add "$(cat /sys/class/net/eth0/address)" 2))
 		;;
 	meraki,mr33)
 		caldata_extract_ubi "ART" 0x1000 0x2f20
@@ -197,13 +197,13 @@ case "$FIRMWARE" in
 		caldata_extract "ART" 0x5000 0x2f20
 		ath10k_patch_mac $(macaddr_add $(mtd_get_mac_ascii u-boot-env ethaddr) +3)
 		;;
-	linksys,whw03)
-		ath10k_patch_mac $(macaddr_setbit_la $(macaddr_add "$(cat /sys/class/net/eth0/address)" 3))
-		caldata_from_file "/dev/mmcblk0p10" 0x5000 0x2f20
-		;;
 	linksys,ea8300)
 		caldata_extract "ART" 0x5000 0x2f20
 		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 3)
+		;;
+	linksys,whw03)
+		caldata_from_file "/dev/mmcblk0p10" 0x5000 0x2f20
+		ath10k_patch_mac $(macaddr_setbit_la $(macaddr_add "$(cat /sys/class/net/eth0/address)" 3))
 		;;
 	meraki,mr33)
 		caldata_extract_ubi "ART" 0x5000 0x2f20
