@@ -450,17 +450,17 @@
 &wifi0 {
 	status = "okay";
 	qcom,ath10k-calibration-variant = "linksys-whw03v2-fcc";
-	pinctrl-0 = <&wifi0_pins>;
-	pinctrl-names = "default";
-	btcoex_support = <1>;
-	wlan_prio_gpio = <52>;
+	//pinctrl-0 = <&wifi0_pins>;
+	//pinctrl-names = "default";
+	//btcoex_support = <1>;
+	//wlan_prio_gpio = <52>;
 };
 
 &wifi1 {
 	status = "okay";
 	//ieee80211-freq-limit = <5170000 5330000>;
 	qcom,ath10k-calibration-variant = "linksys-whw03v2-fcc";
-	btcoex_support = <0>;
+	//btcoex_support = <0>;
 };
 
 &wifi2 {
