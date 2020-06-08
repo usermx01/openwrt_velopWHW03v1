@@ -470,23 +470,6 @@ define Device/linksys_ea6350v3
 endef
 TARGET_DEVICES += linksys_ea6350v3
 
-
-define Device/linksys_whw03
-	$(call Device/FitzImage)
-	DEVICE_VENDOR := Linksys
-	DEVICE_MODEL := WHW03
-	SOC := qcom-ipq4019
-	KERNEL_SIZE := 3072k
-	IMAGE_SIZE := 87040k
-	BLOCKSIZE := 128k
-	PAGESIZE := 2048
-	UBINIZE_OPTS := -E 5    # EOD marks to "hide" factory sig at EOF
-	IMAGES := sysupgrade.bin factory.bin
-	IMAGE/factory.bin  := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-ubi | linksys-image type=WHW03
-	DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct ipq-wifi-linksys_whw03 kmod-leds-pca963x kmod-bluetooth
-endef
-TARGET_DEVICES += linksys_whw03
-
 define Device/linksys_ea8300
 	$(call Device/FitzImage)
 	DEVICE_VENDOR := Linksys
@@ -502,6 +485,24 @@ define Device/linksys_ea8300
 	DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct ipq-wifi-linksys_ea8300 kmod-usb-ledtrig-usbport
 endef
 TARGET_DEVICES += linksys_ea8300
+
+define Device/linksys_whw03
+        $(call Device/FitzImage)
+        DEVICE_VENDOR := Linksys
+        DEVICE_MODEL := WHW03
+        SOC := qcom-ipq4019
+        KERNEL_SIZE := 8192k
+        IMAGE_SIZE := 131072k
+        BLOCKSIZE := 256k
+        IMAGES := sysupgrade.bin kernel.bin rootfs.bin factory.bin
+        IMAGE/rootfs.bin := append-rootfs | pad-rootfs | pad-to $$$${ROOTFS_SIZE}
+        IMAGE/kernel.bin := append-kernel
+        IMAGE/factory.bin  := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-rootfs | pad-rootfs | linksys-image type=WHW03
+        IMAGE/sysupgrade.bin := append-kernel | pad-offset 128k 64 | append-uImage-fakehdr filesystem | pad-to $$$$(KERNEL_SIZE) | append-rootfs | pad-rootfs | append-metadata
+        IMAGE/sysupgrade.bin/squashfs := append-rootfs | pad-to $$$${BLOCKSIZE} | sysupgrade-tar rootfs=$$$$@ | append-metadata
+        DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct ipq-wifi-linksys_whw03 kmod-leds-pca963x kmod-bluetooth losetup e2fsprogs kmod-fs-f2fs mkf2fs kmod-fs-loop
+endef
+TARGET_DEVICES += linksys_whw03
 
 define Device/meraki_mr33
 	$(call Device/FitImage)

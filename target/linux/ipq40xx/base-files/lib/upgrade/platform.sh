@@ -98,9 +98,11 @@ platform_do_upgrade() {
 		nand_do_upgrade "$1"
 		;;
 	linksys,ea6350v3 |\
-	linksys,ea8300 |\
-	linksys,whw03)
+	linksys,ea8300)
 		platform_do_upgrade_linksys "$1"
+		;;
+	linksys,whw03)
+		linksys_do_upgrade "$1"
 		;;
 	meraki,mr33)
 		CI_KERNPART="part.safe"
