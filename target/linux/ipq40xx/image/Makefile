@@ -500,7 +500,7 @@ define Device/linksys_whw03
         IMAGE/factory.bin  := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-rootfs | pad-rootfs | linksys-image type=WHW03
         IMAGE/sysupgrade.bin := append-kernel | pad-offset 128k 64 | append-uImage-fakehdr filesystem | pad-to $$$$(KERNEL_SIZE) | append-rootfs | pad-rootfs | append-metadata
         IMAGE/sysupgrade.bin/squashfs := append-rootfs | pad-to $$$${BLOCKSIZE} | sysupgrade-tar rootfs=$$$$@ | append-metadata
-        DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct ipq-wifi-linksys_whw03 kmod-leds-pca963x kmod-bluetooth losetup e2fsprogs kmod-fs-f2fs mkf2fs kmod-fs-loop
+        DEVICE_PACKAGES := uboot-envtools ath10k-firmware-qca9888-ct ipq-wifi-linksys_whw03 kmod-leds-pca963x kmod-bluetooth losetup e2fsprogs kmod-fs-f2fs mkf2fs kmod-loop
 endef
 TARGET_DEVICES += linksys_whw03
 
