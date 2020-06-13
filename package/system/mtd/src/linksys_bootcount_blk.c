@@ -1,5 +1,5 @@
 /*
- * Linksys boot counter reset code for emmc
+ * Linksys boot counter reset code for blk
  *
  * Copyright (C) 2013 Jonas Gorski <jogo@openwrt.org>
  * Portions Copyright (c) 2019, Jeff Kletsky
@@ -65,9 +65,9 @@ struct bootcounter {
 
 static char page[2048];
 
-int emmc_resetbc(const char *emmc)
+int blk_resetbc(const char *blk)
 {
-	uint64_t emmc_size;
+	uint64_t blk_size;
 	int flags = O_RDWR | O_SYNC;
 	struct bootcounter *curr = (struct bootcounter *)page;
 	unsigned int i;
@@ -80,21 +80,21 @@ int emmc_resetbc(const char *emmc)
 
 	DLOG_OPEN();
 
-	fd = open(emmc, flags);
+	fd = open(blk, flags);
 
 	if (fd < 0) {
-		DLOG_ERR("Could not open device: %s\n", emmc);
+		DLOG_ERR("Could not open device: %s\n", blk);
 		return -1;
 	}
 	
-	if (ioctl(fd, BLKGETSIZE64, &emmc_size) < 0) {
-		DLOG_ERR("Unable to obtain partition size for given partition name: %s\n", emmc);
+	if (ioctl(fd, BLKGETSIZE64, &blk_size) < 0) {
+		DLOG_ERR("Unable to obtain partition size for given partition name: %s\n", blk);
 
 		retval = -1;
 		goto out;
 	}
 
-	num_bc = emmc_size / bc_offset_increment;
+	num_bc = blk_size / bc_offset_increment;
 
 	for (i = 0; i < num_bc; i++) {
 		pread(fd, curr, sizeof(*curr), i * bc_offset_increment);
@@ -128,7 +128,7 @@ int emmc_resetbc(const char *emmc)
 
 		uint64_t range[2];
 		range[0] = 0;
-		range[1] = emmc_size;
+		range[1] = blk_size;
 
 		ret = ioctl(fd, BLKZEROOUT, &range);
 		if (ret < 0) {
