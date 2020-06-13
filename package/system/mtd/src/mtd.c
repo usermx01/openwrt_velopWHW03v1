@@ -47,6 +47,7 @@
 #include "crc32.h"
 #include "fis.h"
 #include "mtd.h"
+#include "emmc.h"
 
 #include <libubox/md5.h>
 
@@ -779,6 +780,10 @@ static void usage(void)
 	    fprintf(stderr,
 	"        resetbc <device>        reset the uboot boot counter\n");
 	}
+	if (emmc_resetbc) {
+	    fprintf(stderr,
+	"        resetbc_emmc <block device>        reset the uboot boot counter\n");
+	}
 	if (mtd_fixtrx) {
 	    fprintf(stderr,
 	"        fixtrx                  fix the checksum in a trx header on first boot\n");
@@ -864,6 +869,7 @@ int main (int argc, char **argv)
 		CMD_VERIFY,
 		CMD_DUMP,
 		CMD_RESETBC,
+		CMD_RESETBC_EMMC,
 	} cmd = -1;
 
 	erase[0] = NULL;
@@ -972,6 +978,9 @@ int main (int argc, char **argv)
 	} else if (((strcmp(argv[0], "resetbc") == 0) && (argc == 2)) && mtd_resetbc) {
 		cmd = CMD_RESETBC;
 		device = argv[1];
+	} else if (((strcmp(argv[0], "resetbc_emmc") == 0) && (argc == 2)) && emmc_resetbc) {
+		cmd = CMD_RESETBC_EMMC;
+		device = argv[1];
 	} else if (((strcmp(argv[0], "fixtrx") == 0) && (argc == 2)) && mtd_fixtrx) {
 		cmd = CMD_FIXTRX;
 		device = argv[1];
@@ -1074,6 +1083,11 @@ int main (int argc, char **argv)
 		case CMD_RESETBC:
 			if (mtd_resetbc) {
 				mtd_resetbc(device);
+			}
+			break;
+		case CMD_RESETBC_EMMC:
+			if (emmc_resetbc) {
+				emmc_resetbc(device);
 			}
 			break;
 		case CMD_FIXSEAMA:
