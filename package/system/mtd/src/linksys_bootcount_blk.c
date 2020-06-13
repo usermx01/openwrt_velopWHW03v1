@@ -65,6 +65,64 @@ struct bootcounter {
 
 static char page[2048];
 
+int blk_getbc(const char *blk)
+{
+	uint64_t blk_size;
+	int flags = O_RDWR | O_SYNC;
+	struct bootcounter *curr = (struct bootcounter *)page;
+	unsigned int i;
+	unsigned int bc_offset_increment = BC_OFFSET_INCREMENT_MIN;
+	int last_count = 0;
+	int num_bc;
+	int fd;
+	int ret;
+	int retval = 0;
+
+	DLOG_OPEN();
+
+	fd = open(blk, flags);
+
+	if (fd < 0) {
+		DLOG_ERR("Could not open device: %s\n", blk);
+		return -1;
+	}
+	
+	if (ioctl(fd, BLKGETSIZE64, &blk_size) < 0) {
+		DLOG_ERR("Unable to obtain partition size for given partition name: %s\n", blk);
+
+		retval = -1;
+		goto out;
+	}
+
+	num_bc = blk_size / bc_offset_increment;
+
+	for (i = 0; i < num_bc; i++) {
+		pread(fd, curr, sizeof(*curr), i * bc_offset_increment);
+		
+		if (curr->magic != BOOTCOUNT_MAGIC &&
+		    curr->magic != ERASE_MAGICK) {
+			DLOG_ERR("Unexpected magic %08x at offset %08x; aborting.",
+				 curr->magic, i * bc_offset_increment);
+
+			retval = -2;
+			goto out;
+		}
+
+		if (curr->magic == ERASE_MAGICK)
+			break;
+
+		last_count = curr->count;
+		break;
+	}
+
+	DLOG_NOTICE("Current number of boot count: %i", last_count);
+	goto out;
+
+out:
+	close(fd);
+	return retval;
+}
+
 int blk_resetbc(const char *blk)
 {
 	uint64_t blk_size;

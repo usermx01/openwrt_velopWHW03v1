@@ -33,17 +33,11 @@
 #include <syslog.h>
 
 #include <sys/ioctl.h>
+#include <mtd/mtd-user.h>
 
 #include "mtd.h"
 
 #define BOOTCOUNT_MAGIC	0x20110811
-
-#ifndef BLKDISCARD
-#define BLKDISCARD	_IO(0x12,119)
-#endif
-#ifndef BLKGETSIZE
-#define BLKGETSIZE 	_IO(0x12,96) 
-#endif
 
 /*
  * EA6350v3, and potentially other NOR-boot devices,
@@ -52,7 +46,6 @@
  */
 
 #define BC_OFFSET_INCREMENT_MIN 16
-#define WRITESIZE 512
 
 
 
@@ -80,9 +73,7 @@ static char page[2048];
 
 int mtd_resetbc(const char *mtd)
 {
-	//struct mtd_info_user mtd_info;
-	int emmc_size;
-	int flags = O_RDWR | O_SYNC;
+	struct mtd_info_user mtd_info;
 	struct bootcounter *curr = (struct bootcounter *)page;
 	unsigned int i;
 	unsigned int bc_offset_increment;
@@ -94,15 +85,9 @@ int mtd_resetbc(const char *mtd)
 
 	DLOG_OPEN();
 
-	fd = open(mtd, flags);
+	fd = mtd_check_open(mtd);
 
-	if (fd < 0) {
-		fprintf(stderr, "Could not open device: %s\n", mtd);
-		return -1;
-	}
-	//fd = mtd_check_open(mtd);
-
-	if (ioctl(fd, BLKGETSIZE, &emmc_size) < 0) {
+	if (ioctl(fd, MEMGETINFO, &mtd_info) < 0) {
 		DLOG_ERR("Unable to obtain mtd_info for given partition name.");
 
 		retval = -1;
@@ -112,7 +97,7 @@ int mtd_resetbc(const char *mtd)
 
 	/* Detect need to override increment (for EA6350v3) */
 
-	/*if (mtd_info.writesize < BC_OFFSET_INCREMENT_MIN) {
+	if (mtd_info.writesize < BC_OFFSET_INCREMENT_MIN) {
 
 		bc_offset_increment = BC_OFFSET_INCREMENT_MIN;
 		DLOG_DEBUG("Offset increment set to %i for writesize of %i",
@@ -120,9 +105,9 @@ int mtd_resetbc(const char *mtd)
 	} else {
 
 		bc_offset_increment = mtd_info.writesize;
-	}*/
+	}
 
-	num_bc = emmc_size / bc_offset_increment;
+	num_bc = mtd_info.size / bc_offset_increment;
 
 	for (i = 0; i < num_bc; i++) {
 		pread(fd, curr, sizeof(*curr), i * bc_offset_increment);
@@ -156,13 +141,13 @@ int mtd_resetbc(const char *mtd)
 		DLOG_NOTICE("Boot-count log full with %i entries; erasing (expected occasionally).",
 			    i);
 
-		uint64_t range[2];
-		range[0] = 0;
-		range[1] = emmc_size;
+		struct erase_info_user erase_info;
+		erase_info.start = 0;
+		erase_info.length = mtd_info.size;
 
-		ret = ioctl(fd, BLKDISCARD, &range);
+		ret = ioctl(fd, MEMERASE, &erase_info);
 		if (ret < 0) {
-			DLOG_ERR("Failed to erase boot-count log eMMC; ioctl() BLKDISCARD returned %i",
+			DLOG_ERR("Failed to erase boot-count log MTD; ioctl() MEMERASE returned %i",
 				 ret);
 
 			retval = -3;
