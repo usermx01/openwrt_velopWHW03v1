@@ -12,5 +12,8 @@ boot() {
 	linksys,ea8300)
 		mtd resetbc s_env || true
 		;;
+	linksys,whw03)
+		mtd resetbc_blk /dev/mmcblk0p12 || true
+		;;
 	esac
 }
