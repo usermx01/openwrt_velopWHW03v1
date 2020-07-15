@@ -7,7 +7,7 @@ include ./common-tp-link.mk
 DEFAULT_SOC := mt7621
 
 KERNEL_DTB += -d21
-DEVICE_VARS += UIMAGE_MAGIC SERCOMM_HWNAME
+DEVICE_VARS += UIMAGE_MAGIC
 
 # The OEM webinterface expects an kernel with initramfs which has the uImage
 # header field ih_name.
@@ -104,6 +104,14 @@ define Build/ubnt-erx-factory-image
 		echo "WARNING: initramfs kernel image too big, cannot generate factory image" >&2; \
 	fi
 endef
+
+define Device/adslr_g7
+  IMAGE_SIZE := 16064k
+  DEVICE_VENDOR := ADSLR
+  DEVICE_MODEL := G7
+  DEVICE_PACKAGES := kmod-mt7615e kmod-mt7615-firmware wpad-basic
+endef
+TARGET_DEVICES += adslr_g7
 
 define Device/afoundry_ew1200
   IMAGE_SIZE := 16064k
@@ -228,6 +236,21 @@ define Device/dlink_dir-860l-b1
 endef
 TARGET_DEVICES += dlink_dir-860l-b1
 
+define Device/dlink_dir-878-a1
+  IMAGE_SIZE := 16000k
+  DEVICE_VENDOR := D-Link
+  DEVICE_MODEL := DIR-878
+  DEVICE_VARIANT := A1
+  DEVICE_PACKAGES := kmod-mt7615e kmod-mt7615-firmware wpad-basic
+  KERNEL_INITRAMFS := $$(KERNEL) | uimage-padhdr 96
+  IMAGES += factory.bin
+  IMAGE/sysupgrade.bin := append-kernel | append-rootfs | uimage-padhdr 96 |\
+	pad-rootfs | append-metadata | check-size
+  IMAGE/factory.bin := append-kernel | append-rootfs | uimage-padhdr 96 |\
+	check-size
+endef
+TARGET_DEVICES += dlink_dir-878-a1
+
 define Device/d-team_newifi-d2
   $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 32448k
@@ -249,6 +272,7 @@ endef
 TARGET_DEVICES += d-team_pbr-m1
 
 define Device/edimax_ra21s
+  $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := Edimax
   DEVICE_MODEL := RA21S
@@ -261,7 +285,26 @@ define Device/edimax_ra21s
 endef
 TARGET_DEVICES += edimax_ra21s
 
+define Device/edimax_re23s
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 15680k
+  DEVICE_VENDOR := Edimax
+  DEVICE_MODEL := RE23S
+  DEVICE_ALT0_VENDOR := Edimax
+  DEVICE_ALT0_MODEL := Gemini RE23S
+  IMAGE/sysupgrade.bin := append-kernel | append-rootfs | \
+	edimax-header -s CSYS -m RN76 -f 0x70000 -S 0x01100000 | pad-rootfs | \
+	append-metadata | check-size
+  IMAGES += factory.bin
+  IMAGE/factory.bin := append-kernel | append-rootfs | \
+	edimax-header -s CSYS -m RN76 -f 0x70000 -S 0x01100000 | pad-rootfs | \
+	check-size
+  DEVICE_PACKAGES := kmod-mt7615e kmod-mt7615-firmware wpad-basic
+endef
+TARGET_DEVICES += edimax_re23s
+
 define Device/edimax_rg21s
+  $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := Edimax
   DEVICE_MODEL := Gemini AC2600 RG21S
@@ -823,14 +866,6 @@ define Device/totolink_a7000r
 endef
 TARGET_DEVICES += totolink_a7000r
 
-define Device/adslr_g7
-  IMAGE_SIZE := 16064k
-  DEVICE_VENDOR := ADSLR
-  DEVICE_MODEL := G7
-  DEVICE_PACKAGES := kmod-mt7615e kmod-mt7615-firmware wpad-basic
-endef
-TARGET_DEVICES += adslr_g7
-
 define Device/tplink_re350-v1
   $(Device/tplink-safeloader)
   DEVICE_MODEL := RE350
@@ -841,6 +876,16 @@ define Device/tplink_re350-v1
   SUPPORTED_DEVICES += re350-v1
 endef
 TARGET_DEVICES += tplink_re350-v1
+
+define Device/tplink_re500-v1
+  $(Device/tplink-safeloader)
+  DEVICE_MODEL := RE500
+  DEVICE_VARIANT := v1
+  DEVICE_PACKAGES := kmod-mt7615e kmod-mt7615-firmware wpad-basic
+  TPLINK_BOARD_ID := RE500-V1
+  IMAGE_SIZE := 14208k
+endef
+TARGET_DEVICES += tplink_re500-v1
 
 define Device/tplink_re650-v1
   $(Device/tplink-safeloader)
@@ -929,6 +974,27 @@ define Device/wevo_w2914ns-v2
 endef
 TARGET_DEVICES += wevo_w2914ns-v2
 
+define Device/xiaomi-ac2100
+  $(Device/uimage-lzma-loader)
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  KERNEL_SIZE := 4096k
+  IMAGE_SIZE := 120320k
+  UBINIZE_OPTS := -E 5
+  IMAGES += kernel1.bin rootfs0.bin
+  IMAGE/kernel1.bin := append-kernel
+  IMAGE/rootfs0.bin := append-ubi | check-size
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  DEVICE_VENDOR := Xiaomi
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7615-firmware wpad-basic uboot-envtools
+endef
+
+define Device/xiaomi_mi-router-ac2100
+  $(Device/xiaomi-ac2100)
+  DEVICE_MODEL := Mi Router AC2100
+endef
+TARGET_DEVICES += xiaomi_mi-router-ac2100
+
 define Device/xiaomi_mir3g
   $(Device/uimage-lzma-loader)
   BLOCKSIZE := 128k
@@ -981,19 +1047,8 @@ endef
 TARGET_DEVICES += xiaomi_mir3p
 
 define Device/xiaomi_redmi-router-ac2100
-  $(Device/uimage-lzma-loader)
-  BLOCKSIZE := 128k
-  PAGESIZE := 2048
-  KERNEL_SIZE := 4096k
-  IMAGE_SIZE := 124416k
-  UBINIZE_OPTS := -E 5
-  IMAGES += kernel1.bin rootfs0.bin
-  IMAGE/kernel1.bin := append-kernel
-  IMAGE/rootfs0.bin := append-ubi | check-size
-  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
-  DEVICE_VENDOR := Xiaomi
+  $(Device/xiaomi-ac2100)
   DEVICE_MODEL := Redmi Router AC2100
-  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7615-firmware wpad-basic uboot-envtools
 endef
 TARGET_DEVICES += xiaomi_redmi-router-ac2100
 
@@ -1091,3 +1146,17 @@ define Device/zio_freezio
 	kmod-usb-ledtrig-usbport wpad-basic
 endef
 TARGET_DEVICES += zio_freezio
+
+define Device/zyxel_wap6805
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  KERNEL_SIZE := 4096k
+  UBINIZE_OPTS := -E 5
+  IMAGE_SIZE := 32448k
+  DEVICE_VENDOR := ZyXEL
+  DEVICE_MODEL := WAP6805
+  DEVICE_PACKAGES := kmod-mt7603 wpad-basic kmod-mt7621-qtn-rgmii
+  KERNEL := $(KERNEL_DTB) | uImage lzma | uimage-padhdr 160
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += zyxel_wap6805
