@@ -12,9 +12,9 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/procd.git
-PKG_SOURCE_DATE:=2020-05-15
-PKG_SOURCE_VERSION:=1ab539b3a8a0070b493112c8263ab380a689db66
-PKG_MIRROR_HASH:=fcc9fb1a046dbbea776ab1ca616c885e73d6a0a35c2278b8fddcc7e42d6b8647
+PKG_SOURCE_DATE:=2020-07-25
+PKG_SOURCE_VERSION:=5cb3715a079c09d1e66a6455a246347c7cf7b998
+PKG_MIRROR_HASH:=ab4e79ba5d1180ce850c811d346de7275889ba4df6f82e373c416f30da89ad12
 CMAKE_INSTALL:=1
 
 PKG_LICENSE:=GPL-2.0
@@ -68,6 +68,14 @@ define Package/procd-seccomp
   CATEGORY:=Base system
   DEPENDS:=@(arm||armeb||mips||mipsel||i386||powerpc||x86_64) @!TARGET_uml @KERNEL_SECCOMP +libubox +libblobmsg-json
   TITLE:=OpenWrt process seccomp helper + utrace
+endef
+
+define Package/uxc
+  SECTION:=base
+  CATEGORY:=Base system
+  DEPENDS:=+procd-ujail +libubus +libubox +libblobmsg-json
+  TITLE:=OpenWrt container management
+  MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 endef
 
 define Package/procd/config
@@ -130,7 +138,19 @@ define Package/procd-seccomp/install
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libpreload-trace.so $(1)/lib
 endef
 
+define Package/uxc/conffiles
+/etc/uxc
+endef
+
+define Package/uxc/install
+	$(INSTALL_DIR) $(1)/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/uxc $(1)/sbin/
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/uxc.init $(1)/etc/init.d/uxc
+endef
+
 $(eval $(call BuildPackage,procd))
 $(eval $(call BuildPackage,procd-ujail))
 $(eval $(call BuildPackage,procd-ujail-console))
 $(eval $(call BuildPackage,procd-seccomp))
+$(eval $(call BuildPackage,uxc))

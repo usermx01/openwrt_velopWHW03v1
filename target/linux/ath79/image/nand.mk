@@ -30,6 +30,21 @@ define Build/zyxel-factory
 		fi
 endef
 
+define Device/8dev_rambutan
+  SOC := qca9557
+  DEVICE_VENDOR := 8devices
+  DEVICE_MODEL := Rambutan
+  DEVICE_PACKAGES := kmod-usb2
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  KERNEL_SIZE := 4096k
+  KERNEL_IN_UBI := 1
+  IMAGES := factory.bin sysupgrade.tar
+  IMAGE/sysupgrade.tar := sysupgrade-tar | append-metadata
+  IMAGE/factory.bin := append-ubi
+endef
+TARGET_DEVICES += 8dev_rambutan
+
 define Device/aerohive_hiveap-121
   SOC := ar9344
   DEVICE_VENDOR := Aerohive
@@ -102,21 +117,13 @@ define Device/glinet_gl-ar750s-common
   DEVICE_MODEL := GL-AR750S
   DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca9887-ct kmod-usb2 \
 	kmod-usb-storage block-mount
-  KERNEL_SIZE := 2048k
   IMAGE_SIZE := 16000k
-  PAGESIZE := 2048
-  VID_HDR_OFFSET := 2048
 endef
 
-# NB: The kernel size is intentionally restricted at this time; see commit message
 define Device/glinet_gl-ar750s-nor-nand
   $(Device/glinet_gl-ar750s-common)
   DEVICE_VARIANT := NOR/NAND
-  BLOCKSIZE := 128k
-  GL_UBOOT_UBI_OFFSET := 2048k
-  IMAGES += factory.img
-  IMAGE/factory.img := append-kernel | pad-to $$$$(GL_UBOOT_UBI_OFFSET) | \
-	append-ubi | check-kernel-size $$$$(GL_UBOOT_UBI_OFFSET)
+  KERNEL_SIZE := 4096k
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
   SUPPORTED_DEVICES += glinet,gl-ar750s-nor
 endef
@@ -171,6 +178,16 @@ define Device/netgear_wndr4300
   $(Device/netgear_ath79_nand)
 endef
 TARGET_DEVICES += netgear_wndr4300
+
+define Device/netgear_wndr4300sw
+  SOC := ar9344
+  DEVICE_MODEL := WNDR4300SW
+  NETGEAR_KERNEL_MAGIC := 0x33373033
+  NETGEAR_BOARD_ID := WNDR4300SW
+  NETGEAR_HW_ID := 29763948+0+128+128+2x2+3x3
+  $(Device/netgear_ath79_nand)
+endef
+TARGET_DEVICES += netgear_wndr4300sw
 
 define Device/netgear_wndr4300-v2
   SOC := qca9563

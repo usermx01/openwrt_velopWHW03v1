@@ -1187,10 +1187,20 @@ define Device/zyxel_keenetic
   IMAGE_SIZE := 7872k
   DEVICE_VENDOR := ZyXEL
   DEVICE_MODEL := Keenetic
-  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ehci kmod-usb-ledtrig-usbport
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ehci kmod-usb-ledtrig-usbport \
+	kmod-usb-dwc2
   SUPPORTED_DEVICES += kn
 endef
 TARGET_DEVICES += zyxel_keenetic
+
+define Device/zyxel_keenetic-lite-b
+  SOC := rt5350
+  IMAGE_SIZE := 7872k
+  DEVICE_VENDOR := ZyXEL
+  DEVICE_MODEL := Keenetic Lite
+  DEVICE_VARIANT := B
+endef
+TARGET_DEVICES += zyxel_keenetic-lite-b
 
 define Device/zyxel_keenetic-start
   SOC := rt5350
