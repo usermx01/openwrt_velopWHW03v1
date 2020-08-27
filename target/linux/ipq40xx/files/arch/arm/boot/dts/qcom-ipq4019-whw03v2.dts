@@ -398,17 +398,17 @@
 
 &wifi0 {
 	status = "okay";
-	qcom,ath10k-calibration-variant = "linksys-whw03v2-fcc";
+	qcom,ath10k-calibration-variant = "linksys-whw03v2-eu";
 };
 
 &wifi1 {
 	status = "okay";
 	//ieee80211-freq-limit = <5170000 5330000>;
-	qcom,ath10k-calibration-variant = "linksys-whw03v2-fcc";
+	qcom,ath10k-calibration-variant = "linksys-whw03v2-eu";
 };
 
 &wifi2 {
 	status = "okay";
 	//ieee80211-freq-limit = <5490000 5835000>;
-	qcom,ath10k-calibration-variant = "linksys-whw03v2-fcc";
+	qcom,ath10k-calibration-variant = "linksys-whw03v2-eu";
 };
