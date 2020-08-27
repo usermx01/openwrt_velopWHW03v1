@@ -938,7 +938,7 @@ static struct device_info boards[] = {
 			"{product_name:Archer C6,product_ver:2.0.0,special_id:52550000}\r\n"
 			"{product_name:Archer C6,product_ver:2.0.0,special_id:4A500000}\r\n",
 		.support_trail = '\x00',
-		.soft_ver = "soft_ver:1.2.1\n",
+		.soft_ver = "soft_ver:1.9.1\n",
 
 		.partitions = {
 			{"fs-uboot", 0x00000, 0x20000},
@@ -973,7 +973,7 @@ static struct device_info boards[] = {
 			"{product_name:Archer A6,product_ver:2.0.0,special_id:54570000}\n"
 			"{product_name:Archer C6,product_ver:2.0.0,special_id:55530000}\n",
 		.support_trail = '\x00',
-		.soft_ver = "soft_ver:1.1.1\n",
+		.soft_ver = "soft_ver:1.9.1\n",
 
 		.partitions = {
 			{"factory-boot", 0x00000, 0x20000},
@@ -1373,6 +1373,78 @@ static struct device_info boards[] = {
 			{"user-config", 0x3d0000, 0x10000},
 			{"default-config", 0x3e0000, 0x10000},
 			{"radio", 0x3f0000, 0x10000},
+			{NULL, 0, 0}
+		},
+
+		.first_sysupgrade_partition = "os-image",
+		.last_sysupgrade_partition = "file-system"
+	},
+
+	/** Firmware layout for the TL-WPA8630P v2 (EU)*/
+	{
+		.id     = "TL-WPA8630P-V2-EU",
+		.vendor = "",
+		.support_list =
+			"SupportList:\n"
+			"{product_name:TL-WPA8630P,product_ver:2.0.0,special_id:45550000}\n",
+		.support_trail = '\x00',
+		.soft_ver = NULL,
+
+		.partitions = {
+			{"factory-uboot", 0x00000, 0x20000},
+			{"fs-uboot", 0x20000, 0x20000},
+			{"firmware", 0x40000, 0x5e0000},
+			{"partition-table", 0x620000, 0x02000},
+			{"default-mac", 0x630000, 0x00020},
+			{"pin", 0x630100, 0x00020},
+			{"device-id", 0x630200, 0x00030},
+			{"product-info", 0x631100, 0x01000},
+			{"extra-para", 0x632100, 0x01000},
+			{"soft-version", 0x640000, 0x01000},
+			{"support-list", 0x641000, 0x01000},
+			{"profile", 0x642000, 0x08000},
+			{"user-config", 0x650000, 0x10000},
+			{"default-config", 0x660000, 0x10000},
+			{"default-nvm", 0x670000, 0xc0000},
+			{"default-pib", 0x730000, 0x40000},
+			{"radio", 0x7f0000, 0x10000},
+			{NULL, 0, 0}
+		},
+
+		.first_sysupgrade_partition = "os-image",
+		.last_sysupgrade_partition = "file-system"
+	},
+
+	/** Firmware layout for the TL-WPA8630P v2 (INT)*/
+	{
+		.id     = "TL-WPA8630P-V2-INT",
+		.vendor = "",
+		.support_list =
+			"SupportList:\n"
+			"{product_name:TL-WPA8630P,product_ver:2.0.0,special_id:41550000}\n"
+			"{product_name:TL-WPA8630P,product_ver:2.0.0,special_id:44450000}\n"
+			"{product_name:TL-WPA8630P,product_ver:2.1.0,special_id:41550000}\n",
+		.support_trail = '\x00',
+		.soft_ver = NULL,
+
+		.partitions = {
+			{"factory-uboot", 0x00000, 0x20000},
+			{"fs-uboot", 0x20000, 0x20000},
+			{"firmware", 0x40000, 0x5e0000},
+			{"partition-table", 0x620000, 0x02000},
+			{"extra-para", 0x632100, 0x01000},
+			{"soft-version", 0x640000, 0x01000},
+			{"support-list", 0x641000, 0x01000},
+			{"profile", 0x642000, 0x08000},
+			{"user-config", 0x650000, 0x10000},
+			{"default-config", 0x660000, 0x10000},
+			{"default-nvm", 0x670000, 0xc0000},
+			{"default-pib", 0x730000, 0x40000},
+			{"default-mac", 0x7e0000, 0x00020},
+			{"pin", 0x7e0100, 0x00020},
+			{"device-id", 0x7e0200, 0x00030},
+			{"product-info", 0x7e1100, 0x01000},
+			{"radio", 0x7f0000, 0x10000},
 			{NULL, 0, 0}
 		},
 
