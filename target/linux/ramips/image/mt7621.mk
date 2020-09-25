@@ -107,8 +107,7 @@ endef
 
 define Device/dsa-migration
   DEVICE_COMPAT_VERSION := 1.1
-  DEVICE_COMPAT_MESSAGE := Config cannot be migrated from swconfig to DSA \
-	(early adopters with DSA already set up may just force-flash keeping existing config)
+  DEVICE_COMPAT_MESSAGE := Config cannot be migrated from swconfig to DSA
 endef
 
 define Device/adslr_g7
@@ -275,6 +274,13 @@ define Device/dlink_dir-1960-a1
 endef
 TARGET_DEVICES += dlink_dir-1960-a1
 
+define Device/dlink_dir-2660-a1
+  $(Device/dlink_dir-xx60-a1)
+  DEVICE_MODEL := DIR-2660
+  DEVICE_VARIANT := A1
+endef
+TARGET_DEVICES += dlink_dir-2660-a1
+
 define Device/dlink_dir-860l-b1
   $(Device/dsa-migration)
   $(Device/seama)
@@ -327,7 +333,7 @@ TARGET_DEVICES += d-team_newifi-d2
 
 define Device/d-team_pbr-m1
   $(Device/dsa-migration)
-  IMAGE_SIZE := 16064k
+  IMAGE_SIZE := 32448k
   DEVICE_VENDOR := PandoraBox
   DEVICE_MODEL := PBR-M1
   DEVICE_PACKAGES := kmod-ata-ahci kmod-mt7603 kmod-mt76x2 kmod-sdhci-mt7620 \
@@ -648,6 +654,15 @@ define Device/linksys_ea7300-v1
   LINKSYS_HWNAME := EA7300
 endef
 TARGET_DEVICES += linksys_ea7300-v1
+
+define Device/linksys_ea7300-v2
+  $(Device/linksys_ea7xxx)
+  DEVICE_MODEL := EA7300
+  DEVICE_VARIANT := v2
+  LINKSYS_HWNAME := EA7300v2
+  DEVICE_PACKAGES += kmod-mt7603
+endef
+TARGET_DEVICES += linksys_ea7300-v2
 
 define Device/linksys_ea7500-v2
   $(Device/linksys_ea7xxx)
@@ -1092,6 +1107,15 @@ define Device/unielec_u7621-06-64m
   SUPPORTED_DEVICES += unielec,u7621-06-512m-64m
 endef
 TARGET_DEVICES += unielec_u7621-06-64m
+
+define Device/wavlink_wl-wn531a6
+  $(Device/dsa-migration)
+  DEVICE_VENDOR := Wavlink
+  DEVICE_MODEL := WL-WN531A6
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7615-firmware kmod-usb3
+  IMAGE_SIZE := 15040k
+endef
+TARGET_DEVICES += wavlink_wl-wn531a6
 
 define Device/wevo_11acnas
   $(Device/dsa-migration)

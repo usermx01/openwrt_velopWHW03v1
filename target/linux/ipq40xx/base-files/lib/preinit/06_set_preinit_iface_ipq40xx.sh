@@ -13,8 +13,6 @@ set_preinit_iface() {
 	zyxel,nbg6617)
 		ifname=eth0
 		;;
-	*)
-		;;
 	esac
 }
 
