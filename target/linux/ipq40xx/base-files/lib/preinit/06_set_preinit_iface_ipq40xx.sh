@@ -8,7 +8,11 @@ set_preinit_iface() {
 	ezviz,cs-w3-wd1200g-eup| \
 	glinet,gl-b1300| \
 	linksys,ea8300| \
+<<<<<<< HEAD
 	linksys,whw03v2| \
+=======
+	linksys,mr8300| \
+>>>>>>> upstream/master
 	meraki,mr33| \
 	zyxel,nbg6617)
 		ifname=eth0

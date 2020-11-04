@@ -69,6 +69,7 @@ platform_do_upgrade() {
 	edgecore,ecw5211 |\
 	edgecore,oap100 |\
 	engenius,eap2200 |\
+	luma,wrtq-329acn |\
 	mobipromo,cm520-79f |\
 	qxwlan,e2600ac-c2)
 		nand_do_upgrade "$1"
@@ -102,7 +103,8 @@ platform_do_upgrade() {
 		;;
 	linksys,ea6350v3 |\
 	linksys,ea8300 |\
-	linksys,whw03v2)
+	linksys,whw03v2|\
+	linksys,mr8300)
 		platform_do_upgrade_linksys "$1"
 		;;
 	meraki,mr33)

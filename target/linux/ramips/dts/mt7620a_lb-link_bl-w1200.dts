@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-/dts-v1/;
-
 #include "mt7620a.dtsi"
 
 #include <dt-bindings/gpio/gpio.h>
@@ -31,7 +29,7 @@
 		compatible = "gpio-leds";
 
 		led_wps: wps {
-			label = "bl-w1200:green:wps";
+			label = "green:wps";
 			gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
 		};
 	};
