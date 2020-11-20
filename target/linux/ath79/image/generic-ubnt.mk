@@ -13,6 +13,14 @@ define Build/mkubntimage
 		-k $(IMAGE_KERNEL) -r $@ -o $@
 endef
 
+define Build/mkubntimage2
+	-$(STAGING_DIR_HOST)/bin/mkfwimage2 -f 0x9f000000 \
+		-v $(UBNT_TYPE).$(UBNT_CHIP).v6.0.0-$(VERSION_DIST)-$(REVISION) \
+		-p jffs2:0x50000:0xf60000:0:0:$@ \
+		-o $@.new
+	@mv $@.new $@
+endef
+
 # all UBNT XM/WA devices expect the kernel image to have 1024k while flash, when
 # booting the image, the size doesn't matter.
 define Build/mkubntimage-split
@@ -102,7 +110,7 @@ define Device/ubnt-xw
   UBNT_VERSION := 6.0.4
 endef
 
-define Device/ubnt_acb-isp
+define Device/ubnt_aircube-isp
   $(Device/ubnt)
   SOC := qca9533
   DEVICE_MODEL := airCube ISP
@@ -111,8 +119,9 @@ define Device/ubnt_acb-isp
   UBNT_CHIP := qca9533
   UBNT_TYPE := ACB
   UBNT_VERSION := 2.5.0
+  SUPPORTED_DEVICES += ubnt,acb-isp
 endef
-TARGET_DEVICES += ubnt_acb-isp
+TARGET_DEVICES += ubnt_aircube-isp
 
 define Device/ubnt_airrouter
   $(Device/ubnt-xm)
@@ -181,9 +190,18 @@ TARGET_DEVICES += ubnt_litebeam-ac-gen2
 define Device/ubnt_nanobeam-ac
   $(Device/ubnt-wa)
   DEVICE_MODEL := NanoBeam AC
+  DEVICE_VARIANT := Gen1
   DEVICE_PACKAGES += kmod-ath10k-ct-smallbuffers ath10k-firmware-qca988x-ct rssileds
 endef
 TARGET_DEVICES += ubnt_nanobeam-ac
+
+define Device/ubnt_nanobeam-ac-gen2
+  $(Device/ubnt-wa)
+  DEVICE_MODEL := NanoBeam AC
+  DEVICE_VARIANT := Gen2
+  DEVICE_PACKAGES += kmod-ath10k-ct-smallbuffers ath10k-firmware-qca988x-ct rssileds
+endef
+TARGET_DEVICES += ubnt_nanobeam-ac-gen2
 
 define Device/ubnt_nanobridge-m
   $(Device/ubnt-xm)
@@ -287,7 +305,7 @@ endef
 TARGET_DEVICES += ubnt_rocket-m
 
 define Device/ubnt_routerstation_common
-  DEVICE_PACKAGES := -kmod-ath9k -wpad-mini -uboot-envtools kmod-usb-ohci \
+  DEVICE_PACKAGES := -kmod-ath9k -wpad-basic-wolfssl -uboot-envtools kmod-usb-ohci \
 	kmod-usb2 fconfig
   DEVICE_VENDOR := Ubiquiti
   SOC := ar7161
@@ -369,3 +387,20 @@ define Device/ubnt_unifiac-pro
   SUPPORTED_DEVICES += unifiac-pro
 endef
 TARGET_DEVICES += ubnt_unifiac-pro
+
+define Device/ubnt_unifi-ap-pro
+  SOC := ar9344
+  DEVICE_VENDOR := Ubiquiti
+  DEVICE_MODEL := UniFi AP Pro
+  UBNT_TYPE := BZ
+  UBNT_CHIP := ar934x
+  KERNEL_SIZE := 3072k
+  IMAGE_SIZE := 15744k
+  KERNEL := kernel-bin | append-dtb | lzma | uImage lzma | jffs2 kernel0
+  IMAGES := sysupgrade.bin factory.bin
+  IMAGE/sysupgrade.bin := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-rootfs |\
+	pad-rootfs | append-metadata | check-size
+  IMAGE/factory.bin := $$(IMAGE/sysupgrade.bin) | mkubntimage2
+  SUPPORTED_DEVICES += uap-pro
+endef
+TARGET_DEVICES += ubnt_unifi-ap-pro
