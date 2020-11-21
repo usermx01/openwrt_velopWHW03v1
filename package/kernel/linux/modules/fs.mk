@@ -53,8 +53,7 @@ define KernelPackage/fs-autofs4
 	CONFIG_AUTOFS4_FS \
 	CONFIG_AUTOFS_FS
   FILES:= \
-	$(LINUX_DIR)/fs/autofs4/autofs4.ko@lt4.18 \
-	$(LINUX_DIR)/fs/autofs/autofs4.ko@ge4.18
+	$(LINUX_DIR)/fs/autofs/autofs4.ko
   AUTOLOAD:=$(call AutoLoad,30,autofs4)
 endef
 
@@ -90,7 +89,6 @@ define KernelPackage/fs-cifs
   TITLE:=CIFS support
   KCONFIG:= \
 	CONFIG_CIFS \
-	CONFIG_CIFS_XATTR=y \
 	CONFIG_CIFS_DFS_UPCALL=n \
 	CONFIG_CIFS_UPCALL=n \
 	CONFIG_CIFS_SMB311=n
@@ -163,30 +161,6 @@ endef
 $(eval $(call KernelPackage,fs-efivarfs))
 
 
-define KernelPackage/fs-exfat
-  SUBMENU:=$(FS_MENU)
-  TITLE:=exFAT filesystem support
-  KCONFIG:= \
-	CONFIG_EXFAT_FS \
-	CONFIG_EXFAT_DONT_MOUNT_VFAT=y \
-	CONFIG_EXFAT_DISCARD=y \
-	CONFIG_EXFAT_DELAYED_SYNC=n \
-	CONFIG_EXFAT_KERNEL_DEBUG=n \
-	CONFIG_EXFAT_DEBUG_MSG=n \
-	CONFIG_EXFAT_DEFAULT_CODEPAGE=437 \
-	CONFIG_EXFAT_DEFAULT_IOCHARSET="utf8"
-  FILES:=$(LINUX_DIR)/drivers/staging/exfat/exfat.ko
-  AUTOLOAD:=$(call AutoLoad,30,exfat,1)
-  DEPENDS:=@!(LINUX_4_14||LINUX_4_19) +kmod-nls-base
-endef
-
-define KernelPackage/fs-exfat/description
- Kernel module for exFAT filesystem support
-endef
-
-$(eval $(call KernelPackage,fs-exfat))
-
-
 define KernelPackage/fs-exportfs
   SUBMENU:=$(FS_MENU)
   TITLE:=exportfs kernel server support
@@ -230,14 +204,8 @@ $(eval $(call KernelPackage,fs-ext4))
 define KernelPackage/fs-f2fs
   SUBMENU:=$(FS_MENU)
   TITLE:=F2FS filesystem support
-  DEPENDS:= +kmod-crypto-hash +kmod-crypto-crc32 +LINUX_5_4:kmod-nls-base
-  KCONFIG:= \
-	CONFIG_F2FS_FS \
-	CONFIG_F2FS_STAT_FS=y \
-	CONFIG_F2FS_FS_XATTR=y \
-	CONFIG_F2FS_FS_POSIX_ACL=n \
-	CONFIG_F2FS_FS_SECURITY=n \
-	CONFIG_F2FS_CHECK_FS=n
+  DEPENDS:= +kmod-crypto-hash +kmod-crypto-crc32 +kmod-nls-base
+  KCONFIG:=CONFIG_F2FS_FS
   FILES:=$(LINUX_DIR)/fs/f2fs/f2fs.ko
   AUTOLOAD:=$(call AutoLoad,30,f2fs,1)
 endef
@@ -460,7 +428,7 @@ define KernelPackage/fs-nfs-v4
 endef
 
 define KernelPackage/fs-nfs-v4/description
- Kernel module for NFS v4 support
+ Kernel module for NFS v4 client support
 endef
 
 $(eval $(call KernelPackage,fs-nfs-v4))
@@ -508,8 +476,7 @@ $(eval $(call KernelPackage,fs-ntfs))
 define KernelPackage/fs-reiserfs
   SUBMENU:=$(FS_MENU)
   TITLE:=ReiserFS filesystem support
-  KCONFIG:=CONFIG_REISERFS_FS \
-	CONFIG_REISERFS_FS_XATTR=y
+  KCONFIG:=CONFIG_REISERFS_FS
   FILES:=$(LINUX_DIR)/fs/reiserfs/reiserfs.ko
   AUTOLOAD:=$(call AutoLoad,30,reiserfs,1)
 endef

@@ -97,8 +97,11 @@ case "$FIRMWARE" in
 	cellc,rtl30vw |\
 	compex,wpj419 |\
 	compex,wpj428 |\
+	edgecore,ecw5211 |\
+	edgecore,oap100 |\
 	engenius,eap1300 |\
 	engenius,eap2200 |\
+	luma,wrtq-329acn|\
 	openmesh,a42 |\
 	openmesh,a62 |\
 	qxwlan,e2600ac-c1 |\
@@ -122,7 +125,8 @@ case "$FIRMWARE" in
 		caldata_extract "ART" 0x1000 0x2f20
 		ath10k_patch_mac $(macaddr_add $(mtd_get_mac_ascii u-boot-env ethaddr) +2)
 		;;
-	linksys,ea8300)
+	linksys,ea8300 |\
+	linksys,mr8300)
 		caldata_extract "ART" 0x1000 0x2f20
 		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 2)
 		;;
@@ -194,8 +198,11 @@ case "$FIRMWARE" in
 	cellc,rtl30vw |\
 	compex,wpj419 |\
 	compex,wpj428 |\
+	edgecore,ecw5211 |\
+	edgecore,oap100 |\
 	engenius,eap1300 |\
 	engenius,eap2200 |\
+	luma,wrtq-329acn|\
 	openmesh,a42 |\
 	openmesh,a62 |\
 	qxwlan,e2600ac-c1 |\
@@ -219,7 +226,8 @@ case "$FIRMWARE" in
 		caldata_extract "ART" 0x5000 0x2f20
 		ath10k_patch_mac $(macaddr_add $(mtd_get_mac_ascii u-boot-env ethaddr) +3)
 		;;
-	linksys,ea8300)
+	linksys,ea8300 |\
+	linksys,mr8300)
 		caldata_extract "ART" 0x5000 0x2f20
 		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 3)
 		;;

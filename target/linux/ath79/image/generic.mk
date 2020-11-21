@@ -6,7 +6,7 @@ include ./common-yuncore.mk
 DEVICE_VARS += ADDPATTERN_ID ADDPATTERN_VERSION
 DEVICE_VARS += SEAMA_SIGNATURE SEAMA_MTDBLOCK
 DEVICE_VARS += KERNEL_INITRAMFS_PREFIX
-DEVICE_VARS += DAP_SIGNATURE
+DEVICE_VARS += DAP_SIGNATURE ENGENIUS_IMGNAME
 
 define Build/add-elecom-factory-initramfs
   $(eval edimax_model=$(word 1,$(1)))
@@ -48,6 +48,23 @@ define Build/cybertan-trx
 		-x 32 -a 0x10000 -x -32 -f $@
 	-mv "$@.new" "$@"
 	-rm $@-empty.bin
+endef
+
+# This needs to make /tmp/_sys/sysupgrade.tgz an empty file prior to
+# sysupgrade, as otherwise it will implant the old configuration from
+# OEM firmware when writing rootfs from factory.bin
+define Build/engenius-tar-gz
+	-[ -f "$@" ] && \
+	mkdir -p $@.tmp && \
+	echo '#!/bin/sh' > $@.tmp/before-upgrade.sh && \
+	echo ': > /tmp/_sys/sysupgrade.tgz' >> $@.tmp/before-upgrade.sh && \
+	$(CP) $(KDIR)/loader-$(DEVICE_NAME).uImage \
+		$@.tmp/openwrt-$(word 1,$(1))-uImage-lzma.bin && \
+	$(CP) $@ $@.tmp/openwrt-$(word 1,$(1))-root.squashfs && \
+	$(TAR) -cp --numeric-owner --owner=0 --group=0 --mode=a-s --sort=name \
+		$(if $(SOURCE_DATE_EPOCH),--mtime="@$(SOURCE_DATE_EPOCH)") \
+		-C $@.tmp . | gzip -9n > $@ && \
+	rm -rf $@.tmp
 endef
 
 define Build/mkdapimg2
@@ -135,6 +152,7 @@ define Build/wrgg-pad-rootfs
 	$(STAGING_DIR_HOST)/bin/padjffs2 $(IMAGE_ROOTFS) -c 64 >>$@
 endef
 
+
 define Device/seama
   KERNEL := kernel-bin | append-dtb | relocate-kernel | lzma
   KERNEL_INITRAMFS := $$(KERNEL) | seama
@@ -157,7 +175,7 @@ define Device/8dev_carambola2
   SOC := ar9331
   DEVICE_VENDOR := 8devices
   DEVICE_MODEL := Carambola2
-  DEVICE_PACKAGES := kmod-usb2 kmod-usb-chipidea2
+  DEVICE_PACKAGES := kmod-usb-chipidea2
   IMAGE_SIZE := 16000k
   SUPPORTED_DEVICES += carambola2
 endef
@@ -204,17 +222,74 @@ define Device/alfa-network_ap121f
   SOC := ar9331
   DEVICE_VENDOR := ALFA Network
   DEVICE_MODEL := AP121F
-  DEVICE_PACKAGES := kmod-usb2 kmod-usb-chipidea2 kmod-usb-storage -swconfig
+  DEVICE_PACKAGES := kmod-usb-chipidea2 kmod-usb-storage -swconfig
   IMAGE_SIZE := 16064k
   SUPPORTED_DEVICES += ap121f
 endef
 TARGET_DEVICES += alfa-network_ap121f
 
+define Device/alfa-network_ap121fe
+  SOC := ar9331
+  DEVICE_VENDOR := ALFA Network
+  DEVICE_MODEL := AP121FE
+  DEVICE_PACKAGES := kmod-usb-chipidea2 kmod-usb-gadget-eth -swconfig
+  IMAGE_SIZE := 16064k
+endef
+TARGET_DEVICES += alfa-network_ap121fe
+
+define Device/alfa-network_n2q
+  SOC := qca9531
+  DEVICE_VENDOR := ALFA Network
+  DEVICE_MODEL := N2Q
+  DEVICE_PACKAGES := kmod-i2c-gpio kmod-gpio-pcf857x kmod-usb2 \
+	kmod-usb-ledtrig-usbport rssileds
+  IMAGE_SIZE := 15872k
+endef
+TARGET_DEVICES += alfa-network_n2q
+
+define Device/alfa-network_n5q
+  SOC := ar9344
+  DEVICE_VENDOR := ALFA Network
+  DEVICE_MODEL := N5Q
+  DEVICE_PACKAGES := rssileds
+  IMAGE_SIZE := 15872k
+  SUPPORTED_DEVICES += n5q
+endef
+TARGET_DEVICES += alfa-network_n5q
+
+define Device/alfa-network_pi-wifi4
+  SOC := qca9531
+  DEVICE_VENDOR := ALFA Network
+  DEVICE_MODEL := Pi-WiFi4
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport -swconfig
+  IMAGE_SIZE := 15872k
+endef
+TARGET_DEVICES += alfa-network_pi-wifi4
+
+define Device/alfa-network_r36a
+  SOC := qca9531
+  DEVICE_VENDOR := ALFA Network
+  DEVICE_MODEL := R36A
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
+  IMAGE_SIZE := 15872k
+  SUPPORTED_DEVICES += r36a
+endef
+TARGET_DEVICES += alfa-network_r36a
+
+define Device/allnet_all-wap02860ac
+  SOC := qca9558
+  DEVICE_VENDOR := ALLNET
+  DEVICE_MODEL := ALL-WAP02860AC
+  DEVICE_PACKAGES := ath10k-firmware-qca988x-ct kmod-ath10k-ct
+  IMAGE_SIZE := 13120k
+endef
+TARGET_DEVICES += allnet_all-wap02860ac
+
 define Device/arduino_yun
   SOC := ar9331
   DEVICE_VENDOR := Arduino
   DEVICE_MODEL := Yun
-  DEVICE_PACKAGES := kmod-usb2 kmod-usb-chipidea2 kmod-usb-ledtrig-usbport \
+  DEVICE_PACKAGES := kmod-usb-chipidea2 kmod-usb-ledtrig-usbport \
 	kmod-usb-storage block-mount -swconfig
   IMAGE_SIZE := 15936k
   SUPPORTED_DEVICES += arduino-yun
@@ -289,17 +364,12 @@ endef
 TARGET_DEVICES += avm_fritzdvbc
 
 define Device/buffalo_bhr-4grv
+  $(Device/buffalo_common)
   SOC := ar7242
-  DEVICE_VENDOR := Buffalo
   DEVICE_MODEL := BHR-4GRV
+  BUFFALO_PRODUCT := BHR-4GRV
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
   IMAGE_SIZE := 32256k
-  IMAGES += factory.bin tftp.bin
-  IMAGE/default := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | \
-	pad-rootfs | check-size
-  IMAGE/factory.bin := $$(IMAGE/default) | buffalo-enc BHR-4GRV 1.99 | \
-	buffalo-tag BHR-4GRV 3
-  IMAGE/tftp.bin := $$(IMAGE/default) | buffalo-tftp-header
   SUPPORTED_DEVICES += wzr-hp-g450h
 endef
 TARGET_DEVICES += buffalo_bhr-4grv
@@ -312,52 +382,48 @@ define Device/buffalo_bhr-4grv2
 endef
 TARGET_DEVICES += buffalo_bhr-4grv2
 
-define Device/buffalo_wzr-hp-ag300h
+define Device/buffalo_wzr_ar7161
+  $(Device/buffalo_common)
   SOC := ar7161
-  DEVICE_VENDOR := Buffalo
-  DEVICE_MODEL := WZR-HP-AG300H
-  IMAGE_SIZE := 32320k
-  IMAGES += factory.bin tftp.bin
-  IMAGE/default := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | \
-	pad-rootfs | check-size
-  IMAGE/factory.bin := $$(IMAGE/default) | buffalo-enc WZR-HP-AG300H 1.99 | \
-	buffalo-tag WZR-HP-AG300H 3
-  IMAGE/tftp.bin := $$(IMAGE/default) | buffalo-tftp-header
+  BUFFALO_PRODUCT := WZR-HP-AG300H
   DEVICE_PACKAGES := kmod-usb-ohci kmod-usb2 kmod-usb-ledtrig-usbport \
 	kmod-leds-reset kmod-owl-loader
+  IMAGE_SIZE := 32320k
   SUPPORTED_DEVICES += wzr-hp-ag300h
+endef
+
+define Device/buffalo_wzr-600dhp
+  $(Device/buffalo_wzr_ar7161)
+  DEVICE_MODEL := WZR-600DHP
+endef
+TARGET_DEVICES += buffalo_wzr-600dhp
+
+define Device/buffalo_wzr-hp-ag300h
+  $(Device/buffalo_wzr_ar7161)
+  DEVICE_MODEL := WZR-HP-AG300H
 endef
 TARGET_DEVICES += buffalo_wzr-hp-ag300h
 
 define Device/buffalo_wzr-hp-g302h-a1a0
+  $(Device/buffalo_common)
   SOC := ar7242
-  DEVICE_VENDOR := Buffalo
   DEVICE_MODEL := WZR-HP-G302H
   DEVICE_VARIANT := A1A0
+  BUFFALO_PRODUCT := WZR-HP-G302H
+  BUFFALO_HWVER := 4
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
   IMAGE_SIZE := 32128k
-  IMAGES += factory.bin tftp.bin
-  IMAGE/default := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | \
-	pad-rootfs | check-size
-  IMAGE/factory.bin := $$(IMAGE/default) | buffalo-enc WZR-HP-G302H 1.99 | \
-	buffalo-tag WZR-HP-G302H 4
-  IMAGE/tftp.bin := $$(IMAGE/default) | buffalo-tftp-header
   SUPPORTED_DEVICES += wzr-hp-g300nh2
 endef
 TARGET_DEVICES += buffalo_wzr-hp-g302h-a1a0
 
 define Device/buffalo_wzr-hp-g450h
+  $(Device/buffalo_common)
   SOC := ar7242
-  DEVICE_VENDOR := Buffalo
   DEVICE_MODEL := WZR-HP-G450H/WZR-450HP
+  BUFFALO_PRODUCT := WZR-HP-G450H
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
   IMAGE_SIZE := 32256k
-  IMAGES += factory.bin tftp.bin
-  IMAGE/default := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | \
-	pad-rootfs | check-size
-  IMAGE/factory.bin := $$(IMAGE/default) | buffalo-enc WZR-HP-G450H 1.99 | \
-	buffalo-tag WZR-HP-G450H 3
-  IMAGE/tftp.bin := $$(IMAGE/default) | buffalo-tftp-header
   SUPPORTED_DEVICES += wzr-hp-g450h
 endef
 TARGET_DEVICES += buffalo_wzr-hp-g450h
@@ -367,7 +433,7 @@ define Device/comfast_cf-e110n-v2
   DEVICE_VENDOR := COMFAST
   DEVICE_MODEL := CF-E110N
   DEVICE_VARIANT := v2
-  DEVICE_PACKAGES := rssileds kmod-leds-gpio -swconfig -uboot-envtools
+  DEVICE_PACKAGES := rssileds -swconfig -uboot-envtools
   IMAGE_SIZE := 16192k
 endef
 TARGET_DEVICES += comfast_cf-e110n-v2
@@ -377,7 +443,7 @@ define Device/comfast_cf-e120a-v3
   DEVICE_VENDOR := COMFAST
   DEVICE_MODEL := CF-E120A
   DEVICE_VARIANT := v3
-  DEVICE_PACKAGES := rssileds kmod-leds-gpio -uboot-envtools
+  DEVICE_PACKAGES := rssileds -uboot-envtools
   IMAGE_SIZE := 8000k
 endef
 TARGET_DEVICES += comfast_cf-e120a-v3
@@ -387,7 +453,7 @@ define Device/comfast_cf-e130n-v2
   DEVICE_VENDOR := COMFAST
   DEVICE_MODEL := CF-E130N
   DEVICE_VARIANT := v2
-  DEVICE_PACKAGES := rssileds kmod-leds-gpio -swconfig -uboot-envtools
+  DEVICE_PACKAGES := rssileds -swconfig -uboot-envtools
   IMAGE_SIZE := 7936k
 endef
 TARGET_DEVICES += comfast_cf-e130n-v2
@@ -396,7 +462,7 @@ define Device/comfast_cf-e313ac
   SOC := qca9531
   DEVICE_VENDOR := COMFAST
   DEVICE_MODEL := CF-E313AC
-  DEVICE_PACKAGES := rssileds kmod-leds-gpio kmod-ath10k-ct-smallbuffers \
+  DEVICE_PACKAGES := rssileds kmod-ath10k-ct-smallbuffers \
 	ath10k-firmware-qca9888-ct -swconfig -uboot-envtools
   IMAGE_SIZE := 7936k
 endef
@@ -416,8 +482,8 @@ define Device/comfast_cf-e5
   SOC := qca9531
   DEVICE_VENDOR := COMFAST
   DEVICE_MODEL := CF-E5/E7
-  DEVICE_PACKAGES := rssileds kmod-leds-gpio kmod-usb2 kmod-usb-net \
-	kmod-usb-net-qmi-wwan -swconfig -uboot-envtools
+  DEVICE_PACKAGES := rssileds kmod-usb2 kmod-usb-net-qmi-wwan -swconfig \
+	-uboot-envtools
   IMAGE_SIZE := 16192k
 endef
 TARGET_DEVICES += comfast_cf-e5
@@ -426,8 +492,7 @@ define Device/comfast_cf-e560ac
   SOC := qca9531
   DEVICE_VENDOR := COMFAST
   DEVICE_MODEL := CF-E560AC
-  DEVICE_PACKAGES := kmod-leds-gpio kmod-usb2 kmod-ath10k-ct \
-	ath10k-firmware-qca9888-ct
+  DEVICE_PACKAGES := kmod-usb2 kmod-ath10k-ct ath10k-firmware-qca9888-ct
   IMAGE_SIZE := 16128k
 endef
 TARGET_DEVICES += comfast_cf-e560ac
@@ -501,6 +566,18 @@ define Device/compex_wpj531-16m
   IMAGE/cpximg-7a07.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | mkmylofw_16m 0x693 3
 endef
 TARGET_DEVICES += compex_wpj531-16m
+
+define Device/compex_wpj563
+  SOC := qca9563
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb3
+  IMAGE_SIZE := 16128k
+  DEVICE_VENDOR := Compex
+  DEVICE_MODEL := WPJ563
+  SUPPORTED_DEVICES += wpj563
+  IMAGES += cpximg-7a02.bin
+  IMAGE/cpximg-7a02.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | mkmylofw_16m 0x694 2
+endef
+TARGET_DEVICES += compex_wpj563
 
 define Device/devolo_dvl1200e
   SOC := qca9558
@@ -771,6 +848,20 @@ define Device/embeddedwireless_dorin
 endef
 TARGET_DEVICES += embeddedwireless_dorin
 
+define Device/engenius_loader_okli
+  DEVICE_VENDOR := EnGenius
+  KERNEL := kernel-bin | append-dtb | lzma | uImage lzma -M 0x4f4b4c49
+  LOADER_TYPE := bin
+  COMPILE := loader-$(1).bin loader-$(1).uImage
+  COMPILE/loader-$(1).bin := loader-okli-compile
+  COMPILE/loader-$(1).uImage := append-loader-okli $(1) | pad-to 64k | lzma | \
+	uImage lzma
+  IMAGES += factory.bin
+  IMAGE/factory.bin := append-squashfs-fakeroot-be | pad-to $$$$(BLOCKSIZE) | \
+	append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | \
+	check-size | engenius-tar-gz $$$$(ENGENIUS_IMGNAME)
+endef
+
 define Device/engenius_ecb1750
   SOC := qca9558
   DEVICE_VENDOR := EnGenius
@@ -784,6 +875,30 @@ define Device/engenius_ecb1750
 	append-metadata | check-size
 endef
 TARGET_DEVICES += engenius_ecb1750
+
+define Device/engenius_enh202-v1
+  $(Device/engenius_loader_okli)
+  SOC := ar7240
+  DEVICE_MODEL := ENH202
+  DEVICE_VARIANT := v1
+  DEVICE_PACKAGES := rssileds
+  IMAGE_SIZE := 4864k
+  LOADER_FLASH_OFFS := 0x1b0000
+  ENGENIUS_IMGNAME := senao-enh202
+endef
+TARGET_DEVICES += engenius_enh202-v1
+
+define Device/engenius_ens202ext-v1
+  $(Device/engenius_loader_okli)
+  SOC := ar9341
+  DEVICE_MODEL := ENS202EXT
+  DEVICE_VARIANT := v1
+  DEVICE_PACKAGES := rssileds
+  IMAGE_SIZE := 12032k
+  LOADER_FLASH_OFFS := 0x230000
+  ENGENIUS_IMGNAME := senao-ens202ext
+endef
+TARGET_DEVICES += engenius_ens202ext-v1
 
 define Device/engenius_epg5000
   SOC := qca9558
@@ -913,12 +1028,51 @@ define Device/glinet_gl-x750
 endef
 TARGET_DEVICES += glinet_gl-x750
 
+define Device/hak5_lan-turtle
+  $(Device/tplink-16mlzma)
+  SOC := ar9331
+  DEVICE_VENDOR := Hak5
+  DEVICE_MODEL := LAN Turtle
+  TPLINK_HWID := 0x5348334c
+  IMAGES := sysupgrade.bin
+  DEVICE_PACKAGES := kmod-usb-chipidea2 -iwinfo -kmod-ath9k -swconfig \
+	-uboot-envtools -wpad-basic-wolfssl
+  SUPPORTED_DEVICES += lan-turtle
+endef
+TARGET_DEVICES += hak5_lan-turtle
+
+define Device/hak5_packet-squirrel
+  $(Device/tplink-16mlzma)
+  SOC := ar9331
+  DEVICE_VENDOR := Hak5
+  DEVICE_MODEL := Packet Squirrel
+  TPLINK_HWID := 0x5351524c
+  IMAGES := sysupgrade.bin
+  DEVICE_PACKAGES := kmod-usb-chipidea2 -iwinfo -kmod-ath9k -swconfig \
+	-uboot-envtools -wpad-basic-wolfssl
+  SUPPORTED_DEVICES += packet-squirrel
+endef
+TARGET_DEVICES += hak5_packet-squirrel
+
+define Device/hak5_wifi-pineapple-nano
+  $(Device/tplink-16mlzma)
+  SOC := ar9331
+  DEVICE_VENDOR := Hak5
+  DEVICE_MODEL := WiFi Pineapple NANO
+  TPLINK_HWID := 0x4e414e4f
+  IMAGES := sysupgrade.bin
+  DEVICE_PACKAGES := kmod-ath9k-htc kmod-usb-chipidea2 kmod-usb-storage \
+	-swconfig -uboot-envtools
+  SUPPORTED_DEVICES += wifi-pineapple-nano
+endef
+TARGET_DEVICES += hak5_wifi-pineapple-nano
+
 define Device/iodata_etg3-r
   SOC := ar9342
   DEVICE_VENDOR := I-O DATA
   DEVICE_MODEL := ETG3-R
   IMAGE_SIZE := 7680k
-  DEVICE_PACKAGES := -iwinfo -kmod-ath9k -wpad-basic
+  DEVICE_PACKAGES := -iwinfo -kmod-ath9k -wpad-basic-wolfssl
 endef
 TARGET_DEVICES += iodata_etg3-r
 
@@ -978,7 +1132,7 @@ define Device/jjplus_ja76pf2
   SOC := ar7161
   DEVICE_VENDOR := jjPlus
   DEVICE_MODEL := JA76PF2
-  DEVICE_PACKAGES += -kmod-ath9k -swconfig -wpad-mini -uboot-envtools fconfig
+  DEVICE_PACKAGES += -kmod-ath9k -swconfig -wpad-basic-wolfssl -uboot-envtools fconfig
   IMAGES := kernel.bin rootfs.bin
   IMAGE/kernel.bin := append-kernel
   IMAGE/rootfs.bin := append-rootfs | pad-rootfs
@@ -998,6 +1152,34 @@ define Device/librerouter_librerouter-v1
   DEVICE_PACKAGES := kmod-usb2
 endef
 TARGET_DEVICES += librerouter_librerouter-v1
+
+define Device/meraki_mr16
+  SOC := ar7161
+  DEVICE_VENDOR := Meraki
+  DEVICE_MODEL := MR16
+  IMAGE_SIZE := 15616k
+  DEVICE_PACKAGES := kmod-owl-loader
+  SUPPORTED_DEVICES += mr16
+  DEVICE_COMPAT_VERSION := 2.0
+  DEVICE_COMPAT_MESSAGE := Partitions differ from ar71xx version of MR16. Image format is incompatible. \
+	To use sysupgrade, you must change /lib/update/common.sh::get_image to prepend 128K zeroes to this image, \
+	and change the bootcmd in u-boot to "bootm 0xbf0a0000". After that, you can use "sysupgrade -F". \
+	For more details, see the OpenWrt Wiki: https://openwrt.org/toh/meraki/mr16, \
+	or the commit message of the MR16 ath79 port on git.openwrt.org.
+endef
+TARGET_DEVICES += meraki_mr16
+
+define Device/mercury_mw4530r-v1
+  $(Device/tplink-8mlzma)
+  SOC := ar9344
+  DEVICE_VENDOR := Mercury
+  DEVICE_MODEL := MW4530R
+  DEVICE_VARIANT := v1
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
+  TPLINK_HWID := 0x45300001
+  SUPPORTED_DEVICES += tl-wdr4300
+endef
+TARGET_DEVICES += mercury_mw4530r-v1
 
 define Device/nec_wg1200cr
   SOC := qca9563
@@ -1030,6 +1212,7 @@ endef
 TARGET_DEVICES += nec_wg800hp
 
 define Device/netgear_ex6400_ex7300
+  $(Device/netgear_generic)
   SOC := qca9558
   NETGEAR_KERNEL_MAGIC := 0x27051956
   NETGEAR_BOARD_ID := EX7300series
@@ -1037,8 +1220,11 @@ define Device/netgear_ex6400_ex7300
   IMAGE_SIZE := 15552k
   IMAGE/default := append-kernel | pad-offset $$$$(BLOCKSIZE) 64 | \
 	netgear-rootfs | pad-rootfs
+  IMAGE/sysupgrade.bin := $$(IMAGE/default) | append-metadata | \
+	check-size
+  IMAGE/factory.img := $$(IMAGE/default) | netgear-dni | \
+	check-size
   DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca99x0-ct
-  $(Device/netgear_ath79)
 endef
 
 define Device/netgear_ex6400
@@ -1054,12 +1240,10 @@ endef
 TARGET_DEVICES += netgear_ex7300
 
 define Device/netgear_wndr3x00
+  $(Device/netgear_generic)
   SOC := ar7161
-  IMAGE/default := append-kernel | pad-to $$$$(BLOCKSIZE) | netgear-squashfs | \
-	append-rootfs | pad-rootfs
   DEVICE_PACKAGES := kmod-usb-ohci kmod-usb2 kmod-usb-ledtrig-usbport \
 	kmod-leds-reset kmod-owl-loader
-  $(Device/netgear_ath79)
 endef
 
 define Device/netgear_wndr3700
@@ -1135,14 +1319,12 @@ endef
 TARGET_DEVICES += netgear_wndrmac-v2
 
 define Device/netgear_wnr2200_common
+  $(Device/netgear_generic)
   SOC := ar7241
   DEVICE_MODEL := WNR2200
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
   NETGEAR_KERNEL_MAGIC := 0x32323030
   NETGEAR_BOARD_ID := wnr2200
-  IMAGE/default := append-kernel | pad-to $$$$(BLOCKSIZE) | netgear-squashfs | \
-	append-rootfs | pad-rootfs
-  $(Device/netgear_ath79)
 endef
 
 define Device/netgear_wnr2200-8m
@@ -1175,8 +1357,6 @@ define Device/ocedo_koala
   DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca988x-ct
   SUPPORTED_DEVICES += koala
   IMAGE_SIZE := 7424k
-  IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | \
-	append-metadata | check-size
 endef
 TARGET_DEVICES += ocedo_koala
 
@@ -1185,8 +1365,6 @@ define Device/ocedo_raccoon
   DEVICE_VENDOR := Ocedo
   DEVICE_MODEL := Raccoon
   IMAGE_SIZE := 7424k
-  IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | \
-	append-metadata | check-size
 endef
 TARGET_DEVICES += ocedo_raccoon
 
@@ -1196,8 +1374,6 @@ define Device/ocedo_ursus
   DEVICE_MODEL := Ursus
   DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca988x-ct
   IMAGE_SIZE := 7424k
-  IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | \
-	append-metadata | check-size
 endef
 TARGET_DEVICES += ocedo_ursus
 
@@ -1256,7 +1432,7 @@ define Device/pisen_ts-d084
   SOC := ar9331
   DEVICE_VENDOR := PISEN
   DEVICE_MODEL := TS-D084
-  DEVICE_PACKAGES := kmod-usb2 kmod-usb-chipidea2
+  DEVICE_PACKAGES := kmod-usb-chipidea2
   TPLINK_HWID := 0x07030101
 endef
 TARGET_DEVICES += pisen_ts-d084
@@ -1284,7 +1460,7 @@ define Device/pisen_wmm003n
   SOC := ar9331
   DEVICE_VENDOR := PISEN
   DEVICE_MODEL := Cloud Easy Power (WMM003N)
-  DEVICE_PACKAGES := kmod-usb2 kmod-usb-chipidea2
+  DEVICE_PACKAGES := kmod-usb-chipidea2
   TPLINK_HWID := 0x07030101
 endef
 TARGET_DEVICES += pisen_wmm003n
@@ -1302,6 +1478,138 @@ define Device/qihoo_c301
 endef
 TARGET_DEVICES += qihoo_c301
 
+define Device/qxwlan_e1700ac-v2
+  SOC := qca9563
+  DEVICE_VENDOR := Qxwlan
+  DEVICE_MODEL := E1700AC
+  DEVICE_PACKAGES := kmod-usb2 kmod-ath10k-ct ath10k-firmware-qca988x-ct
+  SUPPORTED_DEVICES += e1700ac-v2
+endef
+
+define Device/qxwlan_e1700ac-v2-16m
+  $(Device/qxwlan_e1700ac-v2)
+  DEVICE_VARIANT := v2 (16M)
+  IMAGE_SIZE := 15936k
+endef
+TARGET_DEVICES += qxwlan_e1700ac-v2-16m
+
+define Device/qxwlan_e1700ac-v2-8m
+  $(Device/qxwlan_e1700ac-v2)
+  DEVICE_VARIANT := v2 (8M)
+  IMAGE_SIZE := 7744k
+endef
+TARGET_DEVICES += qxwlan_e1700ac-v2-8m
+
+define Device/qxwlan_e558-v2
+  SOC := qca9558
+  DEVICE_VENDOR := Qxwlan
+  DEVICE_MODEL := E558
+  DEVICE_PACKAGES := kmod-usb2
+  SUPPORTED_DEVICES += e558-v2
+endef
+
+define Device/qxwlan_e558-v2-16m
+  $(Device/qxwlan_e558-v2)
+  DEVICE_VARIANT := v2 (16M)
+  IMAGE_SIZE := 15936k
+endef
+TARGET_DEVICES += qxwlan_e558-v2-16m
+
+define Device/qxwlan_e558-v2-8m
+  $(Device/qxwlan_e558-v2)
+  DEVICE_VARIANT := v2 (8M)
+  IMAGE_SIZE := 7744k
+endef
+TARGET_DEVICES += qxwlan_e558-v2-8m
+
+define Device/qxwlan_e600g-v2
+  SOC := qca9531
+  DEVICE_VENDOR := Qxwlan
+  DEVICE_MODEL := E600G
+  DEVICE_PACKAGES := kmod-usb2
+  SUPPORTED_DEVICES += e600g-v2
+endef
+
+define Device/qxwlan_e600g-v2-16m
+  $(Device/qxwlan_e600g-v2)
+  DEVICE_VARIANT := v2 (16M)
+  IMAGE_SIZE := 15936k
+endef
+TARGET_DEVICES += qxwlan_e600g-v2-16m
+
+define Device/qxwlan_e600g-v2-8m
+  $(Device/qxwlan_e600g-v2)
+  DEVICE_VARIANT := v2 (8M)
+  IMAGE_SIZE := 7744k
+endef
+TARGET_DEVICES += qxwlan_e600g-v2-8m
+
+define Device/qxwlan_e600gac-v2
+  SOC := qca9531
+  DEVICE_VENDOR := Qxwlan
+  DEVICE_MODEL := E600GAC
+  DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca9887-ct
+  SUPPORTED_DEVICES += e600gac-v2
+endef
+
+define Device/qxwlan_e600gac-v2-16m
+  $(Device/qxwlan_e600gac-v2)
+  DEVICE_VARIANT := v2 (16M)
+  IMAGE_SIZE := 15936k
+endef
+TARGET_DEVICES += qxwlan_e600gac-v2-16m
+
+define Device/qxwlan_e600gac-v2-8m
+  $(Device/qxwlan_e600gac-v2)
+  DEVICE_VARIANT := v2 (8M)
+  IMAGE_SIZE := 7744k
+endef
+TARGET_DEVICES += qxwlan_e600gac-v2-8m
+
+define Device/qxwlan_e750a-v4
+  SOC := ar9344
+  DEVICE_VENDOR := Qxwlan
+  DEVICE_MODEL := E750A
+  DEVICE_PACKAGES := kmod-usb2
+  SUPPORTED_DEVICES += e750a-v4
+endef
+
+define Device/qxwlan_e750a-v4-16m
+  $(Device/qxwlan_e750a-v4)
+  DEVICE_VARIANT := v4 (16M)
+  IMAGE_SIZE := 15936k
+endef
+TARGET_DEVICES += qxwlan_e750a-v4-16m
+
+define Device/qxwlan_e750a-v4-8m
+  $(Device/qxwlan_e750a-v4)
+  DEVICE_VARIANT := v4 (8M)
+  IMAGE_SIZE := 7744k
+endef
+TARGET_DEVICES += qxwlan_e750a-v4-8m
+
+define Device/qxwlan_e750g-v8
+  SOC := ar9344
+  DEVICE_VENDOR := Qxwlan
+  DEVICE_MODEL := E750G
+  DEVICE_PACKAGES := kmod-usb2
+  SUPPORTED_DEVICES += e750g-v8
+endef
+
+define Device/qxwlan_e750g-v8-16m
+  $(Device/qxwlan_e750g-v8)
+  DEVICE_VARIANT := v8 (16M)
+  IMAGE_SIZE := 15936k
+endef
+TARGET_DEVICES += qxwlan_e750g-v8-16m
+
+define Device/qxwlan_e750g-v8-8m
+  $(Device/qxwlan_e750g-v8)
+  DEVICE_VARIANT := v8 (8M)
+  IMAGE_SIZE := 7744k
+endef
+TARGET_DEVICES += qxwlan_e750g-v8-8m
+
 define Device/rosinson_wr818
   SOC := qca9563
   DEVICE_VENDOR := Rosinson
@@ -1310,6 +1618,16 @@ define Device/rosinson_wr818
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
 endef
 TARGET_DEVICES += rosinson_wr818
+
+define Device/samsung_wam250
+  SOC := ar9344
+  DEVICE_VENDOR := Samsung
+  DEVICE_MODEL := WAM250
+  IMAGE_SIZE := 15872k
+  DEVICE_PACKAGES := kmod-usb2
+  SUPPORTED_DEVICES += wam250
+endef
+TARGET_DEVICES += samsung_wam250
 
 define Device/siemens_ws-ap3610
   SOC := ar7161
@@ -1356,6 +1674,17 @@ define Device/sitecom_wlr-8100
 endef
 TARGET_DEVICES += sitecom_wlr-8100
 
+define Device/telco_t1
+  SOC := qca9531
+  DEVICE_VENDOR := Telco
+  DEVICE_MODEL := T1
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-net-qmi-wwan \
+	kmod-usb-serial-option uqmi -swconfig -uboot-envtools
+  IMAGE_SIZE := 16192k
+  SUPPORTED_DEVICES += telco_electronics,tel-t1
+endef
+TARGET_DEVICES += telco_t1
+
 define Device/teltonika_rut955
   SOC := ar9344
   DEVICE_VENDOR := Teltonika
@@ -1401,6 +1730,16 @@ define Device/trendnet_tew-823dru
 	check-size
 endef
 TARGET_DEVICES += trendnet_tew-823dru
+
+define Device/wallys_dr531
+  SOC := qca9531
+  DEVICE_VENDOR := Wallys
+  DEVICE_MODEL := DR531
+  DEVICE_PACKAGES := kmod-usb2 rssileds
+  IMAGE_SIZE := 7808k
+  SUPPORTED_DEVICES += dr531
+endef
+TARGET_DEVICES += wallys_dr531
 
 define Device/wd_mynet-n750
   $(Device/seama)
@@ -1488,3 +1827,20 @@ define Device/zbtlink_zbt-wd323
 	kmod-usb-serial kmod-usb-serial-cp210x uqmi
 endef
 TARGET_DEVICES += zbtlink_zbt-wd323
+
+define Device/zyxel_nbg6616
+  SOC := qca9557
+  DEVICE_VENDOR := ZyXEL
+  DEVICE_MODEL := NBG6616
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport kmod-rtc-pcf8563 \
+	kmod-ath10k-ct ath10k-firmware-qca988x-ct
+  IMAGE_SIZE := 15232k
+  RAS_BOARD := NBG6616
+  RAS_ROOTFS_SIZE := 14464k
+  RAS_VERSION := "OpenWrt Linux-$(LINUX_VERSION)"
+  IMAGES += factory.bin
+  IMAGE/factory.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | \
+	append-rootfs | pad-rootfs | pad-to 64k | check-size | zyxel-ras-image
+  SUPPORTED_DEVICES += nbg6616
+endef
+TARGET_DEVICES += zyxel_nbg6616

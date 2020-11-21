@@ -9,14 +9,16 @@ ramips_setup_interfaces()
 	local board="$1"
 
 	case $board in
-	asiarf,ap7621-001)
+	asiarf,ap7621-001|\
+	winstars,ws-wn583a6)
 		ucidef_set_interfaces_lan_wan "lan" "wan"
 		;;
 	asiarf,ap7621-nv1|\
 	lenovo,newifi-d1|\
 	mikrotik,routerboard-m33g|\
 	xiaomi,mir3g|\
-	xiaomi,mir3g-v2)
+	xiaomi,mir3g-v2|\
+	xiaomi,mi-router-4a-gigabit)
 		ucidef_set_interfaces_lan_wan "lan1 lan2" "wan"
 		;;
 	edimax,re23s|\
@@ -46,6 +48,9 @@ ramips_setup_interfaces()
 		;;
 	mikrotik,routerboard-750gr3)
 		ucidef_set_interfaces_lan_wan "lan2 lan3 lan4 lan5" "wan"
+		;;
+	mikrotik,routerboard-760igs)
+		ucidef_set_interfaces_lan_wan "lan2 lan3 lan4 lan5" "wan sfp"
 		;;
 	ubnt,edgerouter-x)
 		ucidef_set_interfaces_lan_wan "eth1 eth2 eth3 eth4" "eth0"
@@ -101,18 +106,22 @@ ramips_setup_macs()
 		label_mac=$wan_mac
 		;;
 	linksys,ea7300-v1|\
+	linksys,ea7300-v2|\
 	linksys,ea7500-v2)
 		lan_mac=$(mtd_get_mac_ascii devinfo hw_mac_addr)
 		wan_mac=$lan_mac
 		label_mac=$lan_mac
 		;;
 	mikrotik,routerboard-750gr3|\
+	mikrotik,routerboard-760igs|\
 	mikrotik,routerboard-m11g|\
 	mikrotik,routerboard-m33g)
 		label_mac=$(cat "/sys/firmware/mikrotik/hard_config/mac_base")
 		wan_mac=$label_mac
 		lan_mac=$(macaddr_add $label_mac 1)
 		;;
+	wavlink,wl-wn531a6|\
+	winstars,ws-wn583a6|\
 	zbtlink,zbt-we1326|\
 	zbtlink,zbt-wg3526-16m|\
 	zbtlink,zbt-wg3526-32m)
