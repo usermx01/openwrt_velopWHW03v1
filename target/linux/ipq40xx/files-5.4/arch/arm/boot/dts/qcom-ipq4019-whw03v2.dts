@@ -242,7 +242,7 @@
 };
 
 &blsp1_uart2 {
-	status = "okay";
+	status = "disabled";
 	pinctrl-0 = <&serial_1_pins>;
 	pinctrl-1 = <&serial_1_pins>;
 	pinctrl-names = "default", "sleep";
@@ -255,36 +255,12 @@
 	pinctrl-names = "default";
 	spi-max-frequency = <24000000>;
 	m25p80@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		reg = <0>;
+                #address-cells = <1>;
+                #size-cells = <1>;
 		compatible = "n25q128a11";
-		linux,modalias = "m25p80", "n25q128a11";
-		spi-max-frequency = <24000000>;
-		use-default-sizes;
-	};
-};
-
-&blsp1_spi2 {
-	status = "okay";
-	pinctrl-0 = <&spi_1_pins>;
-	pinctrl-names = "default";
-	spi-max-frequency = <24000000>;
-	em358x@0 {
-		compatible = "spidev";
-		reg = <0>;
-		spi-max-frequency = <12000000>;
-	};
-};
-
-&cryptobam {
-	status = "okay";
-};
-
-&nand {
-	status = "okay";
-
-	nand@0 {
+                reg = <0>;
+                spi-max-frequency = <24000000>;
+                /* partitions are passed via bootloader */
 		partitions {
 			compatible = "fixed-partitions";
 			#address-cells = <1>;
@@ -376,7 +352,121 @@
 				read-only;
 			};
 		};
+        };
+};
+
+&blsp1_spi2 {
+	status = "okay";
+	pinctrl-0 = <&spi_1_pins>;
+	pinctrl-names = "default";
+	spi-max-frequency = <24000000>;
+	em358x@0 {
+		compatible = "spidev";
+		reg = <0>;
+		spi-max-frequency = <12000000>;
 	};
+};
+
+&cryptobam {
+	status = "okay";
+};
+
+&nand {
+	status = "disabled";
+
+	/*nand@0 {
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "0:SBL1";
+				reg = <0x0 0x100000>;
+				read-only;
+			};
+
+			partition@100000 {
+				label = "0:MIBIB";
+				reg = <0x100000 0x100000>;
+				read-only;
+			};
+
+			partition@200000 {
+				label = "0:QSEE";
+				reg = <0x200000 0x100000>;
+				read-only;
+			};
+
+			partition@300000 {
+				label = "0:CDT";
+				reg = <0x300000 0x80000>;
+				read-only;
+			};
+
+			partition@380000 {
+				label = "0:APPSBL";
+				reg = <0x380000 0x200000>;
+				read-only;
+			};
+
+			partition@580000 {
+				label = "0:ART";
+				reg = <0x580000 0x80000>;
+				read-only;
+			};
+
+			partition@600000 {
+				label = "u_env";
+				reg = <0x600000 0x80000>;
+				// writable -- U-Boot environment
+			};
+
+			partition@680000 {
+				label = "s_env";
+				reg = <0x680000 0x40000>;
+				// writable -- Boot counter records
+			};
+
+			partition@6c0000 {
+				label = "devinfo";
+				reg = <0x6c0000 0x40000>;
+				read-only;
+			};
+
+			partition@700000 {
+				label = "kernel";
+				reg = <0x700000 0xa100000>;
+			};
+
+			partition@d00000 {
+				label = "rootfs";
+				reg = <0xd00000 0x9b00000>;
+			};
+
+			partition@a800000 {
+				label = "alt_kernel";
+				reg = <0xa800000 0xa100000>;
+			};
+
+			partition@ae00000 {
+				label = "alt_rootfs";
+				reg = <0xae00000 0x9b00000>;
+			};
+
+			partition@14900000 {
+				label = "sysdiag";
+				reg = <0x14900000 0x200000>;
+				read-only;
+			};
+
+			partition@14b00000 {
+				label = "syscfg";
+				reg = <0x14b00000 0xb500000>;
+				read-only;
+			};
+		};
+	};*/
 };
 
 &pcie0 {
