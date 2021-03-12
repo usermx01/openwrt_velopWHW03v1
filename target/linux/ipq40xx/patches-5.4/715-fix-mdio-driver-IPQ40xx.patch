@@ -1,0 +1,73 @@
+--- a/drivers/net/phy/mdio-ipq4019.c
++++ b/drivers/net/phy/mdio-ipq4019.c
+@@ -9,6 +9,7 @@
+ #include <linux/iopoll.h>
+ #include <linux/of_address.h>
+ #include <linux/of_mdio.h>
++#include <linux/of_gpio.h>
+ #include <linux/phy.h>
+ #include <linux/platform_device.h>
+ 
+@@ -96,12 +97,62 @@
+ 	return 0;
+ }
+ 
++static int ipq4019_phy_reset(struct platform_device *pdev)
++{
++	struct device_node *mdio_node;
++	int phy_reset_gpio_number;
++	int ret;
++
++	mdio_node = of_find_node_by_name(NULL, "mdio");
++	if (!mdio_node) {
++		dev_err(&pdev->dev, "Could not find mdio node\n");
++		return -ENOENT;
++	}
++
++	ret = of_get_named_gpio(mdio_node, "phy-reset-gpio", 0);
++	if (ret < 0) {
++		dev_warn(&pdev->dev, "Could not find DT gpio phy-reset-gpio missing/malformed:%d\n",ret);
++		ret = 0;
++		return ret;
++	}
++
++	phy_reset_gpio_number = ret;
++
++	ret = gpio_request(phy_reset_gpio_number, "phy-reset-gpio");
++	if (ret) {
++		dev_err(&pdev->dev, "Can't get phy-reset-gpio %d\n", ret);
++		return ret;
++	}
++
++	ret = gpio_direction_output(phy_reset_gpio_number, 0x0);
++	if (ret) {
++		dev_err(&pdev->dev,
++			"Can't set direction for phy-reset-gpio %d\n", ret);
++		goto phy_reset_out;
++	}
++
++	usleep_range(1000, 10005);
++
++	gpio_set_value(phy_reset_gpio_number, 0x01);
++
++phy_reset_out:
++	gpio_free(phy_reset_gpio_number);
++
++	return ret;
++}
++
+ static int ipq4019_mdio_probe(struct platform_device *pdev)
+ {
+ 	struct ipq4019_mdio_data *priv;
+ 	struct mii_bus *bus;
+ 	int ret;
+ 
++	ret = ipq4019_phy_reset(pdev);
++	if (ret) {
++		dev_err(&pdev->dev, "Could not find qca807x reset gpio\n");
++		return ret;
++	}
++
+ 	bus = devm_mdiobus_alloc_size(&pdev->dev, sizeof(*priv));
+ 	if (!bus)
+ 		return -ENOMEM;
