@@ -1,122 +1,129 @@
-linksys_get_target_firmware() {
-	local cur_boot_part mtd_ubi0
-
-	cur_boot_part="$(/usr/sbin/fw_printenv -n boot_part)"
-	if [ -z "${cur_boot_part}" ]; then
-		mtd_ubi0=$(cat /sys/devices/virtual/ubi/ubi0/mtd_num)
-		case "$(grep -E "^mtd${mtd_ubi0}:" /proc/mtd | cut -d '"' -f 2)" in
-		kernel|rootfs)
-			cur_boot_part=1
-			;;
-		alt_kernel|alt_rootfs)
-			cur_boot_part=2
-			;;
-		esac
-		>&2 printf "Current boot_part='%s' selected from ubi0/mtd_num='%s'" \
-			"${cur_boot_part}" "${mtd_ubi0}"
-	fi
-
-	# OEM U-Boot for EA6350v3, EA8300 and MR8300; bootcmd=
-	#  if test $auto_recovery = no;
-	#      then bootipq;
-	#  elif test $boot_part = 1;
-	#      then run bootpart1;
-	#      else run bootpart2;
-	#  fi
-
-	case "$cur_boot_part" in
-	1)
-		fw_setenv -s - <<-EOF
-			boot_part 2
-			auto_recovery yes
-		EOF
-		printf "alt_kernel"
-		return
-		;;
-	2)
-		fw_setenv -s - <<-EOF
-			boot_part 1
-			auto_recovery yes
-		EOF
-		printf "kernel"
-		return
-		;;
-	*)
-		return
-		;;
-	esac
+linksys_get_rootfs() {
+	local rootfsdev
+	
+    if read cmdline < /proc/cmdline; then
+        case "$cmdline" in
+        *root=*)
+            rootfsdev="${cmdline##*root=}"
+            rootfsdev="${rootfsdev%% *}"
+            ;;
+        esac
+        
+        echo "${rootfsdev}"
+    fi	
 }
 
-linksys_get_root_magic() {
-	(get_image "$@" | dd skip=786432 bs=4 count=1 | hexdump -v -n 4 -e '1/1 "%02x"') 2>/dev/null
+linksys_update_boot_part() {
+    rootfsdev=$1
+    
+    case "$rootfsdev" in
+        "/dev/mmcblk0p15")
+            fw_setenv -s - <<-EOF
+                boot_part 2
+                auto_recovery yes
+EOF
+            return
+            ;;
+        "/dev/mmcblk0p17")
+            fw_setenv -s - <<-EOF
+                    boot_part 1
+                    auto_recovery yes
+EOF
+            return
+            ;;
+        *)
+            return
+            ;;
+    esac
+}
+
+linksys_do_flash() {
+	local tar_file=$1
+	local kernel=$2
+	local rootfs=$3
+	
+	local overlay_align=$((64*1024))
+	
+	local board_dir=$(tar tf $tar_file | grep -m 1 '^sysupgrade-.*/$')
+	board_dir=${board_dir%/}
+
+	echo "flashing kernel to $kernel"
+	tar xf $tar_file ${board_dir}/kernel -O >$kernel
+
+	echo "flashing rootfs to ${rootfs}"
+	tar xf $tar_file ${board_dir}/root -O >"${rootfs}"
+	
+	local squashfs_bytes_used="$(hexdump -e '"0x%02X"'  -n 4 -s 0x28 $rootfs)"
+	local offset=$(( (squashfs_bytes_used+(overlay_align-1)) & ~(overlay_align-1) ))
+	[ $offset -lt 65536 ] && {
+		echo Wrong size for rootfs: $offset
+		sleep 10
+		reboot -f
+	}
+
+	# Mount loop for rootfs_data
+	local loopdev="$(losetup -f)"
+	losetup -o $offset $loopdev $rootfs || {
+		echo "Failed to mount looped rootfs_data."
+		sleep 10
+		reboot -f
+	}
+
+	echo "Format new rootfs_data at position ${offset}."
+	mkfs.f2fs -q -l rootfs_data $loopdev
+	mkdir /tmp/new_root
+	mount -t f2fs $loopdev /tmp/new_root && {
+		echo "Saving config to rootfs_data at position ${offset}."
+		cp -v /tmp/sysupgrade.tgz /tmp/new_root/
+		umount /tmp/new_root
+	}
+
+	# Cleanup
+	losetup -d $loopdev >/dev/null 2>&1
+	sync
+	umount -a
+	reboot -f
 }
 
 platform_do_upgrade_linksys() {
-	local magic_long="$(get_magic_long "$1")"
-
-	local rm_oem_fw_vols="squashfs ubifs"	# from OEM [alt_]rootfs UBI
-	local vol
-
+	local tar_file="$1"
+	local board=$(board_name)	
+	local rootfs kernel
+	local magic_long="$(get_magic_long "$tar_file")"
+	local target_rootfs="$(linksys_get_rootfs)"	
+	
+	echo "target root fs $target_rootfs"
+	echo "magic long $magic_long"
+	
+	[ -b "${target_rootfs}" ] || return 1
+	
 	mkdir -p /var/lock
-	local part_label="$(linksys_get_target_firmware)"
+	case "$target_rootfs" in
+        "/dev/mmcblk0p15")
+            echo "writing firmware to alternate partition"
+            kernel="/dev/mmcblk0p16"
+            rootfs="/dev/mmcblk0p17"
+            fw_setenv -s - <<-EOF
+                boot_part 2
+                auto_recovery yes
+EOF
+            ;;
+        "/dev/mmcblk0p17")
+            echo "writing firmware to primary partition"
+            kernel="/dev/mmcblk0p14"
+            rootfs="/dev/mmcblk0p15"
+            fw_setenv -s - <<-EOF
+                boot_part 1
+                auto_recovery yes
+EOF
+            ;;
+        *)
+            return 1
+            ;;
+	esac
 	touch /var/lock/fw_printenv.lock
 
-	if [ -z "$part_label" ]; then
-		echo "cannot find target partition"
-		exit 1
-	fi
+	linksys_do_flash $tar_file $kernel $rootfs
 
-	local target_mtd=$(find_mtd_part "$part_label")
-
-	[ "$magic_long" = "73797375" ] && {
-		CI_KERNPART="$part_label"
-		if [ "$part_label" = "kernel" ]; then
-			CI_UBIPART="rootfs"
-		else
-			CI_UBIPART="alt_rootfs"
-		fi
-
-		local mtdnum="$(find_mtd_index "$CI_UBIPART")"
-		if [ ! "$mtdnum" ]; then
-			echo "cannot find ubi mtd partition $CI_UBIPART"
-			return 1
-		fi
-
-		local ubidev="$(nand_find_ubi "$CI_UBIPART")"
-		if [ ! "$ubidev" ]; then
-			ubiattach -m "$mtdnum"
-			sync
-			ubidev="$(nand_find_ubi "$CI_UBIPART")"
-		fi
-
-		if [ "$ubidev" ]; then
-			for vol in $rm_oem_fw_vols; do
-				ubirmvol "/dev/$ubidev" -N "$vol" 2>/dev/null
-			done
-		fi
-
-		# complete std upgrade
-		nand_upgrade_tar "$1"
-	}
-
-	[ "$magic_long" = "27051956" ] && {
-		# This magic is for a uImage (which is a sysupgrade image)
-		# check firmwares' rootfs types
-		local oldroot="$(linksys_get_root_magic "$target_mtd")"
-		local newroot="$(linksys_get_root_magic "$1")"
-
-		if [ "$newroot" = "55424923" ] && [ "$oldroot" = "55424923" ]; then
-			# we're upgrading from a firmware with UBI to one with UBI
-			# erase everything to be safe
-			# - Is that really needed? Won't remove (or comment) the if,
-			#   because it may be needed in a future device.
-			#mtd erase $part_label
-			#get_image "$1" | mtd -n write - $part_label
-			echo "writing \"$1\" UBI image to \"$part_label\" (UBI)..."
-			get_image "$1" | mtd write - "$part_label"
-		else
-			echo "writing \"$1\" image to \"$part_label\""
-			get_image "$1" | mtd write - "$part_label"
-		fi
-	}
+	return 0
 }

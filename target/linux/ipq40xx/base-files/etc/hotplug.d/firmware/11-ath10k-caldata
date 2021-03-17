@@ -41,12 +41,15 @@ case "$FIRMWARE" in
 		caldata_extract "0:ART" 0x9000 0x2f20
 		;;
 	linksys,ea8300 |\
-	linksys,mr8300 |\
-	linksys,whw03v2)
+	linksys,mr8300)
 		caldata_extract "ART" 0x9000 0x2f20
 		# OEM assigns 4 sequential MACs
 		ath10k_patch_mac $(macaddr_setbit_la $(macaddr_add "$(cat /sys/class/net/eth0/address)" 4))
 		;;
+	linksys,whw03)
+                caldata_from_file "/dev/mmcblk0p10" 0x9000 0x2f20
+                ath10k_patch_mac $(macaddr_setbit_la $(macaddr_add "$(cat /sys/class/net/eth0/address)" 4))
+                ;;
 	esac
 	;;
 "ath10k/pre-cal-ahb-a000000.wifi.bin")
@@ -132,11 +135,14 @@ case "$FIRMWARE" in
 		ath10k_patch_mac $(macaddr_add $(mtd_get_mac_ascii u-boot-env ethaddr) +2)
 		;;
 	linksys,ea8300 |\
-	linksys,mr8300 |\
-	linksys,whw03v2)
+	linksys,mr8300)
 		caldata_extract "ART" 0x1000 0x2f20
 		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 2)
 		;;
+	linksys,whw03)
+                caldata_from_file "/dev/mmcblk0p10" 0x1000 0x2f20
+                ath10k_patch_mac $(macaddr_setbit_la $(macaddr_add "$(cat /sys/class/net/eth0/address)" 2))
+                ;;
 	meraki,mr33)
 		caldata_extract_ubi "ART" 0x1000 0x2f20
 		caldata_valid "202f" || caldata_extract "ART" 0x1000 0x2f20
@@ -237,11 +243,14 @@ case "$FIRMWARE" in
 		ath10k_patch_mac $(macaddr_add $(mtd_get_mac_ascii u-boot-env ethaddr) +3)
 		;;
 	linksys,ea8300 |\
-	linksys,mr8300 |\
-	linksys,whw03v2)
+	linksys,mr8300)
 		caldata_extract "ART" 0x5000 0x2f20
 		ath10k_patch_mac $(macaddr_add "$(cat /sys/class/net/eth0/address)" 3)
 		;;
+	linksys,whw03)
+                caldata_from_file "/dev/mmcblk0p10" 0x5000 0x2f20
+                ath10k_patch_mac $(macaddr_setbit_la $(macaddr_add "$(cat /sys/class/net/eth0/address)" 3))
+                ;;
 	meraki,mr33)
 		caldata_extract_ubi "ART" 0x5000 0x2f20
 		caldata_valid "202f" || caldata_extract "ART" 0x5000 0x2f20

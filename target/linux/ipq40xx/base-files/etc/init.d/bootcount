@@ -10,9 +10,11 @@ boot() {
 		;;
 	linksys,ea6350v3|\
 	linksys,ea8300|\
-	linksys,mr8300|\
-	linksys,whw03v2)
+	linksys,mr8300)
 		mtd resetbc s_env || true
 		;;
+	linksys,whw03)
+                mtd resetbc_blk /dev/mmcblk0p12 || true
+                ;;
 	esac
 }
