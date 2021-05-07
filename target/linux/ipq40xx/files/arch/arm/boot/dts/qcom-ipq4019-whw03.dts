@@ -31,8 +31,8 @@
 		compatible = "gpio-keys";
 
 		button@1 {
-			label = "wps";
-			linux,code = <KEY_WPS_BUTTON>;
+			label = "reset";
+			linux,code = <KEY_RESTART>;
 			gpios = <&tlmm 18 GPIO_ACTIVE_HIGH>;
 		};
 	};
