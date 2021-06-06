@@ -199,36 +199,33 @@
 			output-high;
 		};
 		reset {
-            pins = "gpio49";
-            function = "gpio";
-            output-high;
-        };
+		    pins = "gpio49";
+		    function = "gpio";
+		    output-high;
+		};
 	};
 	
-	wifi1_pins {
-        mux_1 {
-            pins = "gpio37";
-            output-high;
-            function = "wcss0_dbg16";
-            bias-pull-up;
-            drive-strength = <0x06>;
-        };
+	wifi1_pins: wifi1_pinmux {
+		mux_1 {
+		    pins = "gpio37";
+		    output-high;
+		    function = "wcss0_dbg16";
+		    bias-pull-up;
+		};
 
-        mux_2 {
-            pins = "gpio43";
-            function = "wifi_wci1";
-            bias-pull-up;
-            drive-strength = <0x06>;
-        };
+		mux_2 {
+		    pins = "gpio43";
+		    function = "wifi_wci1";
+		    bias-pull-up;
+		};
 
-        mux_3 {
-            pins = "gpio52";
-            output-high;
-            function = "gpio";
-            bias-pull-up;
-            drive-strength = <0x06>;
+		mux_3 {
+		    pins = "gpio52";
+		    output-high;
+		    function = "gpio";
+		    bias-pull-up;
+		};
         };
-    };
 };
 
 &mdio {
@@ -458,6 +455,8 @@
 
 &wifi0 {
 	status = "okay";
+	pinctrl-0 = <&wifi1_pins>;
+	pinctrl-names = "default";
 	qcom,ath10k-calibration-variant = "linksys-whw03v2-fcc";
 };
 
