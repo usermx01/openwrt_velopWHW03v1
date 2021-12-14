@@ -23,7 +23,8 @@
 		led-failsafe = &led_red;
 		led-running = &led_green;
 		led-upgrade = &led_red;
-        serial0 = &blsp1_uart1;
+	        serial0 = &blsp1_uart1;
+		uart1 = &blsp1_uart2;
 	};
 
 
@@ -249,19 +250,19 @@
 
 };
 
-/*&blsp1_uart2 {
-	status = "okay";
-	pinctrl-0 = <&serial_1_pins>;
-	pinctrl-1 = <&serial_1_pins>;
+&blsp1_uart2 {
+	status = "disabled";
+	pinctrl-0 = <&uart_1_pins>;
+	pinctrl-1 = <&uart_1_pins>;
 	pinctrl-names = "default", "sleep";
 
-};*/
+};
 
 &cryptobam {
 	status = "okay";
 };
 
-/*&blsp1_spi1 {
+&blsp1_spi1 {
     pinctrl-0 = <&spi_0_pins>;
     pinctrl-names = "default";
     status = "okay";
@@ -281,11 +282,11 @@
     pinctrl-names = "default";
     status = "okay";
     em358x@0 {
-        compatible = "spidev";
+        compatible = "linux,spidev";
         reg = <0x00>;
         spi-max-frequency = <0xb71b00>;
     };
-};*/
+};
 
 &nand {
 	status = "okay";
@@ -390,7 +391,7 @@
 
 	perst-gpio = <&tlmm 38 GPIO_ACTIVE_LOW>;
 	wake-gpio = <&tlmm 40 GPIO_ACTIVE_LOW>;
-	//clkreq-gpio = <&tlmm 39 GPIO_ACTIVE_LOW>;
+	clkreq-gpio = <&tlmm 39 GPIO_ACTIVE_LOW>;
 
 	bridge@0,0 {
 		reg = <0x00000000 0 0 0 0>;
@@ -412,7 +413,8 @@
 
 &blsp1_i2c3 {
 	pinctrl-0 = <&i2c_0_pins>;
-	pinctrl-names = "default";
+	pinctrl-1 = <&i2c_0_pins>;
+	pinctrl-names = "i2c_active", "i2c_sleep";
 
 	status = "okay";
 
